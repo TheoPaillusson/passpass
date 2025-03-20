@@ -1,5 +1,7 @@
 from app import db
 
+#Class pour la création de la base de données
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
