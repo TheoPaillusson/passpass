@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Manage Quizzes{% endblock %}
+{% block content %}
+<h1>Manage Quizzes</h1>
+<label>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+        </tr>   
+    </thead>
+    <tbody>
+        {% for quizz in quizzes %}
+        <tr>
+            <td>{{ quizz.id }}</td>
+            <td>{{ quizz.date_of_quiz }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</label>
+{% endblock %}

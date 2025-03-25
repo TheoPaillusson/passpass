@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<h1>Manage Users</h1>
+<table>
+<label>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+        </tr>   
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</label>
+
+{% endblock %}
