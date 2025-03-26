@@ -1,7 +1,7 @@
 from app import create_app, db, login_manager
 from flask import render_template, redirect, flash, url_for
 from app.models import User, Subject, Chapter, Quiz, Question, Score
-from app.forms import RegisterForm, LoginForm, SubjectForm, ChapterForm, QuizForm
+from app.forms import RegisterForm, LoginForm, SubjectForm, ChapterForm, QuizForm, QuestionForm
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
@@ -166,14 +166,50 @@ def delete_chapter(id):
     return redirect(url_for('manage_chapters'))
 
 # Questions #
-@app.route("/admin/manage_questions")
+
+# @app.route("/admin/manage_questions")
+# @login_required
+# def manage_questions():
+#     if current_user.username != os.getenv('ADMIN_USERNAME'):
+#         flash("Vous n'avez pas accès à cette page", category="error")
+#         return redirect(url_for('home'))
+#     questions = Question.query.all()
+#     return render_template('admin/manage_questions.html', questions=questions)
+
+
+@app.route('/admin/manage_quiz_questions/<int:quiz_id>')
 @login_required
-def manage_questions():
+def manage_quiz_questions(quiz_id):
     if current_user.username != os.getenv('ADMIN_USERNAME'):
         flash("Vous n'avez pas accès à cette page", category="error")
-        return redirect(url_for('home'))
-    questions = Question.query.all()
-    return render_template('admin/manage_questions.html', questions=questions)
+        return redirect(url_for('home'))    
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = quiz.questions
+    return render_template("admin/manage_quiz_questions.html", quiz=quiz, questions=questions)
+
+@app.route('/admin/add_questions/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+def add_question(quiz_id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))   
+    form = QuestionForm()
+    if form.validate_on_submit():
+        question = Question(
+            question_statement = form.question_statement.data,
+            option1 = form.option1.data,
+            option2 = form.option2.data,
+            option3 = form.option3.data,
+            option4 = form.option4.data,
+            correct_option = form.correct_option.data,
+            quiz_id = quiz_id
+        )
+        db.session.add(question)
+        db.session.commit()
+        flash('Question ajoutée avec succès', category="success")
+        return redirect(url_for('manage_quiz_questions', quiz_id=quiz_id))
+    return render_template('admin/add_questions.html', form=form, quiz_id=quiz_id)
+
 
 
 # Quiz #
@@ -196,6 +232,7 @@ def add_quiz():
     form.chapter_id.choices = [(c.id, c.name) for c in Chapter.query.all()]
     if form.validate_on_submit():
         quiz = Quiz(
+            name = form.name.data,
             date_of_quiz = form.date_of_quiz.data,
             time_duration = form.time_duration.data,
             chapter_id = form.chapter_id.data
@@ -216,6 +253,7 @@ def edit_quiz(id):
     form = QuizForm(obj=quiz)
     form.chapter_id.choices = [(c.id, c.name) for c in Chapter.query.all()]
     if form.validate_on_submit():
+            quiz.name = form.name.data
             quiz.date_of_quiz = form.date_of_quiz.data
             quiz.time_duration = form.time_duration.data
             quiz.chapter_id = form.chapter_id.data
@@ -248,14 +286,14 @@ def manage_users():
     return render_template('admin/manage_users.html', users=users)
 
 # Scores #
-@app.route("/admin/manage_scores")
-@login_required
-def manage_scores():
-    if current_user.username != os.getenv('ADMIN_USERNAME'):
-        flash("Vous n'avez pas accès à cette page", category="error")
-        return redirect(url_for('home'))
-    scores = Score.query.all()
-    return render_template('admin/manage_scores.html', scores=scores)
+# @app.route("/admin/manage_scores")
+# @login_required
+# def manage_scores():
+#     if current_user.username != os.getenv('ADMIN_USERNAME'):
+#         flash("Vous n'avez pas accès à cette page", category="error")
+#         return redirect(url_for('home'))
+#     scores = Score.query.all()
+#     return render_template('admin/manage_scores.html', scores=scores)
 
 ##### END OF ADMIN ROUTES #####
 

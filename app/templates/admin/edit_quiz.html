@@ -5,6 +5,17 @@
 <form method="POST">
     {{ form.hidden_tag() }}
         <div>
+        {{ form.name.label }} 
+        {{ form.name }}
+        {% if form.name.errors %}
+        <ul class="errors">
+        {% for error in form.name.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+        </div>
+        <div>
         {{ form.date_of_quiz.label }} 
         {{ form.date_of_quiz }}
         {% if form.date_of_quiz.errors %}
