@@ -1,7 +1,7 @@
 from app import create_app, db, login_manager
 from flask import render_template, redirect, flash, url_for
 from app.models import User, Subject, Chapter, Quiz, Question, Score
-from app.forms import RegisterForm, LoginForm
+from app.forms import RegisterForm, LoginForm, SubjectForm, ChapterForm, QuizForm
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
@@ -11,7 +11,6 @@ app = create_app()
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
-
 
 @app.cli.command('db-create')
 def create_db():
@@ -31,7 +30,8 @@ def create_db():
         print("Compte administrateur déjà créé")
     print("Database created")
 
-#ADMIN ROUTES
+##### ADMIN ROUTES #####
+
 @app.route("/admin/login", methods=['GET', 'POST'])
 def admin_login():
     form = LoginForm()
@@ -53,6 +53,7 @@ def admin_dashboard():
         return redirect(url_for('home'))
     return render_template("admin/dashboard.html")
 
+# Subjects #
 @app.route("/admin/manage_subjects")
 @login_required
 def manage_subjects():
@@ -62,6 +63,50 @@ def manage_subjects():
     subjects = Subject.query.all()
     return render_template('admin/manage_subjects.html', subjects=subjects)
 
+@app.route('/admin/add_subject', methods=['GET', 'POST'])
+@login_required
+def add_subject():
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    form = SubjectForm()
+    if form.validate_on_submit():
+        subject = Subject(name=form.name.data,
+                          description = form.description.data)
+        db.session.add(subject)
+        db.session.commit()
+        flash('Subject enregistré avec succès', category="success")
+        return redirect(url_for('manage_subjects'))
+    return render_template("admin/add_subject.html", form=form)
+
+@app.route('/admin/edit_subject/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_subject(id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    subject = Subject.query.get_or_404(id)
+    form = SubjectForm(obj=subject)
+    if form.validate_on_submit():
+        subject.name = form.name.data
+        subject.description = form.description.data
+        db.session.commit()
+        flash("Subject modifié avec succès", category="success")
+    return render_template("admin/edit_subject.html", form=form)
+
+@app.route('/admin/delete_subject/<int:id>', methods=['POST'])
+@login_required
+def delete_subject(id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    subject = Subject.query.get_or_404(id)
+    db.session.delete(subject)
+    db.session.commit()
+    flash("Subject supprimé avec succès", category="success")
+    return redirect(url_for('manage_subjects'))
+
+# Chapters #
 @app.route("/admin/manage_chapters")
 @login_required
 def manage_chapters():
@@ -71,6 +116,56 @@ def manage_chapters():
     chapters = Chapter.query.all()
     return render_template('admin/manage_chapters.html', chapters=chapters)
 
+@app.route('/admin/add_chapter', methods=['GET', 'POST'])
+@login_required
+def add_chapter():
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    form = ChapterForm()
+    form.subject_id.choices = [(s.id, s.name) for s in Subject.query.all()]
+    if form.validate_on_submit():
+        chapter = Chapter(name=form.name.data,
+                          description = form.description.data,
+                          subject_id = form.subject_id.data)
+        db.session.add(chapter)
+        db.session.commit()
+        flash('Chapter enregistré avec succès', category="success")
+        return redirect(url_for('manage_chapters'))
+    return render_template("admin/add_chapter.html", form=form)
+
+@app.route('/admin/edit_chapter/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_chapter(id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    chapter = Chapter.query.get_or_404(id)
+    form = ChapterForm(obj=chapter)
+    form.subject_id.choices = [(s.id, s.name) for s in Subject.query.all()]
+    if form.validate_on_submit():
+        chapter.name = form.name.data
+        chapter.description = form.description.data
+        chapter.subject_id = form.subject_id.data
+        db.session.commit()
+        flash("Chapter modifié avec succès", category="success")
+        return redirect(url_for('manage_chapters'))
+
+    return render_template("admin/edit_chapter.html", form=form)
+
+@app.route('/admin/delete_chapter/<int:id>', methods=['POST'])
+@login_required
+def delete_chapter(id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    chapter = Chapter.query.get_or_404(id)
+    db.session.delete(chapter)
+    db.session.commit()
+    flash("Chapter supprimé avec succès", category="success")
+    return redirect(url_for('manage_chapters'))
+
+# Questions #
 @app.route("/admin/manage_questions")
 @login_required
 def manage_questions():
@@ -80,6 +175,8 @@ def manage_questions():
     questions = Question.query.all()
     return render_template('admin/manage_questions.html', questions=questions)
 
+
+# Quiz #
 @app.route("/admin/manage_quizzes")
 @login_required
 def manage_quizzes():
@@ -89,6 +186,58 @@ def manage_quizzes():
     quizzes = Quiz.query.all()
     return render_template('admin/manage_quizzes.html', quizzes=quizzes)
 
+@app.route('/admin/add_quiz', methods=['GET', 'POST'])
+@login_required
+def add_quiz():
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    form = QuizForm()
+    form.chapter_id.choices = [(c.id, c.name) for c in Chapter.query.all()]
+    if form.validate_on_submit():
+        quiz = Quiz(
+            date_of_quiz = form.date_of_quiz.data,
+            time_duration = form.time_duration.data,
+            chapter_id = form.chapter_id.data
+        )
+        db.session.add(quiz)
+        db.session.commit()
+        flash('Chapter enregistré avec succès', category="success")
+        return redirect(url_for('manage_quizzes'))
+    return render_template("admin/add_quiz.html", form=form)
+
+@app.route('/admin/edit_quiz/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_quiz(id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    quiz = Quiz.query.get_or_404(id)
+    form = QuizForm(obj=quiz)
+    form.chapter_id.choices = [(c.id, c.name) for c in Chapter.query.all()]
+    if form.validate_on_submit():
+            quiz.date_of_quiz = form.date_of_quiz.data
+            quiz.time_duration = form.time_duration.data
+            quiz.chapter_id = form.chapter_id.data
+            db.session.commit()
+            flash("Quiz modifié avec succès", category="success")
+            return redirect(url_for('manage_quizzes'))
+    return render_template("admin/edit_quiz.html", form=form)
+
+@app.route('/admin/delete_quiz/<int:id>', methods=['POST'])
+@login_required
+def delete_quiz(id):
+    if current_user.username != os.getenv('ADMIN_USERNAME'):
+        flash("Vous n'avez pas accès à cette page", category="error")
+        return redirect(url_for('home'))
+    quiz = Quiz.query.get_or_404(id)
+    db.session.delete(quiz)
+    db.session.commit()
+    flash("Quiz supprimé avec succès", category="success")
+    return redirect(url_for('manage_quizzes'))
+
+
+# Users #
 @app.route("/admin/manage_users")
 @login_required
 def manage_users():
@@ -98,7 +247,7 @@ def manage_users():
     users = User.query.all()
     return render_template('admin/manage_users.html', users=users)
 
-
+# Scores #
 @app.route("/admin/manage_scores")
 @login_required
 def manage_scores():
@@ -108,7 +257,11 @@ def manage_scores():
     scores = Score.query.all()
     return render_template('admin/manage_scores.html', scores=scores)
 
-#END OF ADMIN ROUTES
+##### END OF ADMIN ROUTES #####
+
+##### CRUD ROUTES #####
+
+##### END OF CRUD ROUTES #####
 
 @app.route("/")
 def home():
@@ -143,7 +296,6 @@ def login():
         else:
             flash("Authentification échouée", category="error") 
     return render_template("login.html", form=form)
-
 
 @app.route("/dashboard")
 @login_required

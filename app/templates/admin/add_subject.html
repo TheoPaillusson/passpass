@@ -1,0 +1,31 @@
+{% extends "admin/dashboard.html" %}
+{% block title %}Ajouter un Subject{% endblock %}
+{% block crud %}
+<h2>Ajouter un Subject</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+        <div>
+        {{ form.name.label }} 
+        {{ form.name }}
+        {% if form.name.errors %}
+        <ul class="errors">
+        {% for error in form.username.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+        </div>
+        <div>
+            {{ form.description.label }} 
+            {{ form.description(size=20) }}
+            {% if form.description.errors %}
+            <ul class="errors">
+            {% for error in form.description.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+            </div>
+            {{ form.submit }}
+    </form>
+{% endblock %}
