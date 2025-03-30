@@ -4,6 +4,7 @@ from app.models import User, Subject, Chapter, Quiz, Question, Score
 from app.forms import RegisterForm, LoginForm, SubjectForm, ChapterForm, QuizForm, QuestionForm
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
+from seed import seed_database
 import os
 
 app = create_app()
@@ -30,6 +31,12 @@ def create_db():
         print("Compte administrateur déjà créé")
     print("Database created")
 
+@app.cli.command('db-seed')
+def seed_db():
+    seed_database()
+    print ("Database seeded successfully")
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -55,7 +62,26 @@ def admin_dashboard():
     if current_user.username != os.getenv('ADMIN_USERNAME'):
         flash("Vous n'avez pas accès à cette page", category="error")
         return redirect(url_for('home'))
-    return render_template("admin/dashboard.html")
+    quizzes = Quiz.query.all()
+    quiz_names = [quiz.name for quiz in quizzes]
+    average_scores = []
+    completion_rates = []
+
+    for quiz in quizzes:
+        scores = Score.query.filter_by(quiz_id=quiz.id).all()
+        if scores:
+            average_score = sum([s.total_scored for s in scores]) / len(scores)
+            users_attempted = len(scores)       
+            completion_rate = (users_attempted / (User.query.count() - 1)) * 100 # moins un pour ne pas prendre en compte l'admin
+        else:
+            average_score = 0
+            completion_rate = 0
+        average_scores.append(average_score)
+        completion_rates.append(completion_rate)
+    return render_template("admin/dashboard.html", 
+                           quiz_names=quiz_names,
+                           average_scores=average_scores,
+                           completion_rates=completion_rates)
 
 # Subjects #
 @app.route("/admin/manage_subjects")
