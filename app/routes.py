@@ -1,5 +1,5 @@
 from app import create_app, db, login_manager
-from flask import render_template, redirect, flash, url_for
+from flask import render_template, redirect, flash, url_for, request
 from app.models import User, Subject, Chapter, Quiz, Question, Score
 from app.forms import RegisterForm, LoginForm, SubjectForm, ChapterForm, QuizForm, QuestionForm
 from flask_login import login_user, login_required, logout_user, current_user
@@ -29,6 +29,10 @@ def create_db():
     else:
         print("Compte administrateur déjà créé")
     print("Database created")
+
+@app.route("/")
+def home():
+    return render_template("home.html")
 
 ##### ADMIN ROUTES #####
 
@@ -167,16 +171,6 @@ def delete_chapter(id):
 
 # Questions #
 
-# @app.route("/admin/manage_questions")
-# @login_required
-# def manage_questions():
-#     if current_user.username != os.getenv('ADMIN_USERNAME'):
-#         flash("Vous n'avez pas accès à cette page", category="error")
-#         return redirect(url_for('home'))
-#     questions = Question.query.all()
-#     return render_template('admin/manage_questions.html', questions=questions)
-
-
 @app.route('/admin/manage_quiz_questions/<int:quiz_id>')
 @login_required
 def manage_quiz_questions(quiz_id):
@@ -209,8 +203,6 @@ def add_question(quiz_id):
         flash('Question ajoutée avec succès', category="success")
         return redirect(url_for('manage_quiz_questions', quiz_id=quiz_id))
     return render_template('admin/add_questions.html', form=form, quiz_id=quiz_id)
-
-
 
 # Quiz #
 @app.route("/admin/manage_quizzes")
@@ -285,26 +277,6 @@ def manage_users():
     users = User.query.all()
     return render_template('admin/manage_users.html', users=users)
 
-# Scores #
-# @app.route("/admin/manage_scores")
-# @login_required
-# def manage_scores():
-#     if current_user.username != os.getenv('ADMIN_USERNAME'):
-#         flash("Vous n'avez pas accès à cette page", category="error")
-#         return redirect(url_for('home'))
-#     scores = Score.query.all()
-#     return render_template('admin/manage_scores.html', scores=scores)
-
-##### END OF ADMIN ROUTES #####
-
-##### CRUD ROUTES #####
-
-##### END OF CRUD ROUTES #####
-
-@app.route("/")
-def home():
-    return render_template("home.html")
-
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -338,7 +310,48 @@ def login():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html")
+    quizzes = Quiz.query.all()
+    return render_template("dashboard.html", quizzes=quizzes)
+
+
+@app.route('/quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+def attempt_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = quiz.questions
+    if request.method == 'POST':
+        score = 0
+        for question in questions:
+            user_answer = request.form.get(f'question_{question.id}')
+            if user_answer and int(user_answer) == question.correct_option:
+                score += 1
+        user_score = Score(
+            total_scored = score,
+            quiz_id = quiz_id,
+            user_id = current_user.id,  
+        )
+        db.session.add(user_score)
+        db.session.commit()
+        flash(f'Votre score : {score}/{len(questions)}', category="success")
+        return redirect(url_for("quiz_results", quiz_id=quiz_id))
+    return render_template("attempt_quiz.html", quiz=quiz, questions=questions)
+
+@app.route('/quiz_results/<int:quiz_id>', )
+@login_required
+def quiz_results(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
+    return render_template("quiz_results.html", quiz=quiz, score=score)
+
+
+
+# Scores #
+
+##### END OF ADMIN ROUTES #####
+
+##### CRUD ROUTES #####
+
+##### END OF CRUD ROUTES #####
 
 @app.route("/logout")
 @login_required
