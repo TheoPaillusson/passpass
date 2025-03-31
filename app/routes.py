@@ -337,8 +337,17 @@ def login():
 @app.route("/dashboard")
 @login_required
 def dashboard():
+    scores = Score.query.filter_by(user_id=current_user.id).all()
+    total_attempted_quizzes = len(scores)
+
+    average_score = sum([s.total_scored for s in scores]) / total_attempted_quizzes if total_attempted_quizzes > 0 else 0
+
+
     quizzes = Quiz.query.all()
-    return render_template("dashboard.html", quizzes=quizzes)
+    return render_template("dashboard.html",
+                           scores=scores,
+                           total_attempted_quizzes=total_attempted_quizzes, 
+                           average_score=average_score)
 
 
 @app.route('/quiz/<int:quiz_id>', methods=['GET', 'POST'])

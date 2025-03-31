@@ -1,31 +1,58 @@
 {% extends "layout.html" %}
 {% block title%}User Dashboard{% endblock %}
+{% block head %}
+{{ super() }}
+<style>
+    .user-profile {
+        display : grid;
+        grid-template-columns: 1fr 1fr;
+    }
+</style>
+{% endblock %}
 {% block content %}
 <h1>User Dashboard</h1>
 
-<div>
-    <h5>You can attempt any quiz based on your interest from the list :</h5>
+<div class="user-profile">
+    <div class="details">
+        <h4>Your details</h4>
+        <div class="key-value">
+            <span>Username :</span> <strong>{{ current_user.username }}</strong>
+            <span>Full Name :</span> <strong>{{ current_user.fullname }}</strong>
+            <span>Qualification :</span> <strong>{{ current_user.qualification }}</strong>
+            <span>Date of Birth :</span> <strong>{{ current_user.dob }}</strong>
+        </div>
+    </div>
+
+    <div class="stats">
+        <h4>Progress Summary</h4>
+        <div class="key-value">
+            <span>Total Attempted Quizzes :</span> <strong>{{ total_attempted_quizzes }}</strong>
+            <span>Average Score :</span> <strong>{{ average_score|round(2) }}</strong>
+           
+        </div>
+    </div>
+</div>
+
+<div class="quiz-history">
+    <h4>Quizz History</h4>
     <table>
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Date of Quiz</th>
-                <th>Time duration</th>
+                <th>Quiz Name</th>
+                <th>Attempted Time</th>
+                <th>Total Scored</th>
             </tr>
         </thead>
         <tbody>
-            {% for quiz in quizzes %}
+            {% for score in scores %}
             <tr>
-                <td>{{ quiz.name }}</td>
-                <td>{{ quiz.date_of_quiz }}</td>
-                <td> {{ quiz.time_duration / 60 }} Minutes</td>
-                <td>
-                    <a href="{{ url_for('attempt_quiz', quiz_id=quiz.id) }}">Attempt Quiz</a>
-                </td>
+                <td>{{ score.quiz.name }}</td>
+                <td>{{ score.timestamp.strftime("%Y-%m-%d %H:%M")}}</td>
+                <td>{{ score.total_scored}}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
 </div>
+
 {% endblock %}

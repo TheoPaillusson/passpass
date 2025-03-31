@@ -1,6 +1,6 @@
 {% extends "admin/layout.html" %}
 {% block title %}Ajouter une Question {% endblock %}
-{% block crud %}
+{% block content %}
 <h2>Ajouter une Question pour {{ quiz_id }}</h2>
 <form method="POST">
     {{ form.hidden_tag() }}
