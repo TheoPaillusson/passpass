@@ -380,7 +380,25 @@ def quiz_results(quiz_id):
     score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
     return render_template("quiz_results.html", quiz=quiz, score=score)
 
-
+@app.route('/leaderboard')
+@login_required
+def leaderboard():
+    users = User.get_all_users()
+    leaderboard_data = []
+    for user in users:
+        scores = Score.query.filter_by(user_id=user.id).all()
+        total_score = sum([s.total_scored for s in scores])
+        leaderboard_data.append({
+            "user_fullname": user.fullname,
+            "total_score": total_score
+        })
+        leaderboard_data.sort(key=lambda x:x['total_score'], reverse=True)
+        user_fullnames = [x['user_fullname'] for x in leaderboard_data]
+        user_total_scores = [x["total_score"] for x in leaderboard_data]
+    return render_template('leaderboard.html',
+                           leaderboard_data=leaderboard_data,
+                           user_fullnames=user_fullnames,
+                           user_total_scores=user_total_scores)
 
 # Scores #
 

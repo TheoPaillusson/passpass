@@ -73,10 +73,14 @@
         Salut {{ current_user.fullname }}!
         {% endif %}
         <div class="container">
+          <div>
+          {% if current_user.is_authenticated %}
           <ul>
-             <li>Link1</li>
-             <li>Link1</li>
+             <li><a href="{{ url_for('dashboard')}}">Dashboard</a></li>
+             <li><a href="{{ url_for('leaderboard')}}">Leaderboard</a></li>
           </ul>
+          {% endif %}
+        </div>
           <div>
               {% block content %} {% endblock %}
           </div>
