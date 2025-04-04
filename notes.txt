@@ -1,0 +1,12 @@
+A prévoir dans le refactoring : 
+
+- lorsqu'un user refait des questions aux quelles il a déjà répondu juste, 
+il obtient de nouveaux points dans le ranking
+
+- pouvoir décoréller les questions des quiz
+- pouvoir choisir le nombre de questions auxquelles répondre 
+- pouvoir choisir "questions auxquelles j'ai déjà répondu" 
+- questions auxquelles je n'ai pas répondu 
+
+- Problème du jour 
+- importer des images 

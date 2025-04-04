@@ -344,7 +344,7 @@ def dashboard():
 
 
     quizzes = Quiz.query.all()
-    return render_template("dashboard.html",
+    return render_template("user/dashboard.html",
                            scores=scores,
                            total_attempted_quizzes=total_attempted_quizzes, 
                            average_score=average_score)
@@ -371,14 +371,14 @@ def attempt_quiz(quiz_id):
         db.session.commit()
         flash(f'Votre score : {score}/{len(questions)}', category="success")
         return redirect(url_for("quiz_results", quiz_id=quiz_id))
-    return render_template("attempt_quiz.html", quiz=quiz, questions=questions)
+    return render_template("user/attempt_quiz.html", quiz=quiz, questions=questions)
 
 @app.route('/quiz_results/<int:quiz_id>', )
 @login_required
 def quiz_results(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
-    return render_template("quiz_results.html", quiz=quiz, score=score)
+    return render_template("user/quiz_results.html", quiz=quiz, score=score)
 
 @app.route('/leaderboard')
 @login_required
@@ -395,7 +395,7 @@ def leaderboard():
         leaderboard_data.sort(key=lambda x:x['total_score'], reverse=True)
         user_fullnames = [x['user_fullname'] for x in leaderboard_data]
         user_total_scores = [x["total_score"] for x in leaderboard_data]
-    return render_template('leaderboard.html',
+    return render_template('user/leaderboard.html',
                            leaderboard_data=leaderboard_data,
                            user_fullnames=user_fullnames,
                            user_total_scores=user_total_scores)
@@ -414,3 +414,23 @@ def logout():
     logout_user()
     flash('Vous vous êtes déconnecté', category="success")
     return redirect(url_for('login'))
+
+@app.route('/select-quiz', methods=['GET', 'POST'])
+@login_required
+def select_quiz():
+    subjects = Subject.query.all()
+    chapters = Chapter.query.all()
+    quizzes = Quiz.query.all()
+
+    if request.method =='POST':
+        subject_id = request.form.get('subject_id')
+        chapter_id = request.form.get('chapter_id')
+        if subject_id:
+            quizzes = Quiz.query.join(Chapter).filter(Chapter.subject_id == subject_id).all()
+        if chapter_id:
+            quizzes = Quiz.query.filter_by(chapter_id=chapter_id).all()
+
+    return render_template("user/select-quiz.html", 
+                           subjects=subjects,
+                           chapters=chapters,
+                           quizzes=quizzes)
