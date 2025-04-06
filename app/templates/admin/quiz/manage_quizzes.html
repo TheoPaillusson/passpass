@@ -31,7 +31,7 @@
                 <button onclick="return confirm('Voulez-vous vraiment supprimer ce Quiz ?')">Delete</button>
                 </form>
             </td>
-        <td><a href="{{url_for('admin.manage_quiz_questions', quiz_id=quiz.id)}}">Manage Quiz Questions</a></td>
+        <td><a href="{{url_for('admin.manage_questions', quiz_id=quiz.id)}}">Manage Quiz Questions</a></td>
         </tr>
         {% endfor %}
     </tbody>

@@ -66,7 +66,7 @@ questions_data = [
         "option2": "4",
         "option3": "5",
         "option4": "6",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 1
     },
     {
@@ -75,7 +75,7 @@ questions_data = [
         "option2": "15",
         "option3": "20",
         "option4": "25",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 1
     },
     {
@@ -84,7 +84,7 @@ questions_data = [
         "option2": "6",
         "option3": "7",
         "option4": "8",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 1
     },
 
@@ -95,7 +95,7 @@ questions_data = [
         "option2": "180 degrees",
         "option3": "270 degrees",
         "option4": "360 degrees",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 2
     },
     {
@@ -104,7 +104,7 @@ questions_data = [
         "option2": "12",
         "option3": "16",
         "option4": "20",
-        "correct_option": 3,
+        "correct_options": 3,
         "quiz_id": 2
     },
 
@@ -115,7 +115,7 @@ questions_data = [
         "option2": "Newton",
         "option3": "Watt",
         "option4": "Pascal",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 3
     },
     {
@@ -124,7 +124,7 @@ questions_data = [
         "option2": "400,000 km/s",
         "option3": "500,000 km/s",
         "option4": "600,000 km/s",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 3
     },
 
@@ -135,7 +135,7 @@ questions_data = [
         "option2": "CO2",
         "option3": "O2",
         "option4": "N2",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 4
     },
     {
@@ -144,7 +144,7 @@ questions_data = [
         "option2": "7",
         "option3": "8",
         "option4": "9",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 4
     },
 
@@ -155,7 +155,7 @@ questions_data = [
         "option2": "George Washington",
         "option3": "Abraham Lincoln",
         "option4": "John Adams",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 5
     },
     {
@@ -164,7 +164,7 @@ questions_data = [
         "option2": "1944",
         "option3": "1945",
         "option4": "1946",
-        "correct_option": 3,
+        "correct_options": 3,
         "quiz_id": 5
     },
 
@@ -175,7 +175,7 @@ questions_data = [
         "option2": "x = -2",
         "option3": "x = 2 or x = -2",
         "option4": "x = 4",
-        "correct_option": 3,
+        "correct_options": 3,
         "quiz_id": 6
     },
     {
@@ -184,7 +184,7 @@ questions_data = [
         "option2": "3x^2",
         "option3": "4x^3",
         "option4": "3x^3",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 6
     },
 
@@ -195,7 +195,7 @@ questions_data = [
         "option2": "72π",
         "option3": "108π",
         "option4": "144π",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 7
     },
     {
@@ -204,7 +204,7 @@ questions_data = [
         "option2": "a + b = c",
         "option3": "a^2 + b^2 = c",
         "option4": "a + b^2 = c^2",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 7
     },
 
@@ -215,7 +215,7 @@ questions_data = [
         "option2": "KE = 0.5mv^2",
         "option3": "KE = mgh",
         "option4": "KE = Fd",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 8
     },
     {
@@ -224,7 +224,7 @@ questions_data = [
         "option2": "Ampere",
         "option3": "Ohm",
         "option4": "Watt",
-        "correct_option": 2,
+        "correct_options": 2,
         "quiz_id": 8
     },
 
@@ -235,7 +235,7 @@ questions_data = [
         "option2": "6",
         "option3": "7",
         "option4": "8",
-        "correct_option": 3,
+        "correct_options": 3,
         "quiz_id": 9
     },
     {
@@ -244,7 +244,7 @@ questions_data = [
         "option2": "HCl",
         "option3": "HNO3",
         "option4": "H3PO4",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 9
     },
 
@@ -255,7 +255,7 @@ questions_data = [
         "option2": "Vladimir Lenin",
         "option3": "Joseph Stalin",
         "option4": "Friedrich Engels",
-        "correct_option": 1,
+        "correct_options": 1,
         "quiz_id": 10
     },
     {
@@ -264,7 +264,7 @@ questions_data = [
         "option2": "1988",
         "option3": "1989",
         "option4": "1990",
-        "correct_option": 3,
+        "correct_options": 3,
         "quiz_id": 10
     }
 ]
@@ -325,7 +325,7 @@ def seed_database():
             option2=question_data["option2"],
             option3=question_data["option3"],
             option4=question_data["option4"],
-            correct_option=question_data["correct_option"],
+            correct_options=question_data["correct_options"],
             quiz_id=question_data["quiz_id"]
         )
         db.session.add(question)

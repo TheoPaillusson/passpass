@@ -138,12 +138,14 @@ def delete_chapter(id):
     flash("Chapter supprimé avec succès", category="success")
     return redirect(url_for('admin.manage_chapters'))
 
-@admin_bp.route('/admin/manage_quiz_questions/<int:quiz_id>')
+@admin_bp.route("/admin/quiz/<int:quiz_id>/questions")
 @admin_login_required
-def manage_quiz_questions(quiz_id):
+def manage_questions(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     questions = quiz.questions
-    return render_template("admin/manage_quiz_questions.html", quiz=quiz, questions=questions)
+    return render_template("admin/question/manage_questions.html",
+                           quiz=quiz,
+                           questions=questions)
 
 @admin_bp.route('/admin/question/add_questions/<int:quiz_id>', methods=['GET', 'POST'])
 @admin_login_required
@@ -156,14 +158,46 @@ def add_question(quiz_id):
             option2 = form.option2.data,
             option3 = form.option3.data,
             option4 = form.option4.data,
-            correct_option = form.correct_option.data,
+            correct_options = form.correct_options.data,
             quiz_id = quiz_id
         )
         db.session.add(question)
         db.session.commit()
         flash('Question ajoutée avec succès', category="success")
-        return redirect(url_for('admin.manage_quiz_questions', quiz_id=quiz_id))
+        return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
     return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id)
+
+@admin_bp.route("/admin/quiz/<int:quiz_id>/edit_question/<int:question_id>", methods=['GET', 'POST'])
+@admin_login_required
+def edit_question(quiz_id, question_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    question = Question.query.get_or_404(question_id)
+    form = QuestionForm(obj=question)
+    if form.validate_on_submit():
+        question.question_statement = form.question_statement.data
+        question.option1 = form.option1.data
+        question.option2 = form.option2.data
+        question.option3 = form.option3.data
+        question.option4 = form.option4.data
+        question.option5 = form.option4.data
+        question.correct_options = form.correct_options.data
+        question.quiz_id = quiz_id
+        db.session.commit()
+        flash("Question updated successfully!", category="success")
+        return redirect(url_for("admin.manage_questions", quiz_id=quiz_id))
+    return render_template("admin/question/edit_question.html",
+                           form=form,
+                           quiz=quiz)
+
+@admin_bp.route("/admin/quiz/<int:quiz_id>/delete_question/<int:question_id>", methods=['POST'])
+@admin_login_required
+def delete_question(quiz_id, question_id):
+    question = Question.query.get_or_404(question_id)
+    db.session.delete(question)
+    db.session.commit()
+    flash("Question deleted successfully!", category="success")
+    return redirect(url_for("admin.manage_questions", quiz_id=quiz_id))
+
 
 # Quiz #
 @admin_bp.route("/admin/manage_quizzes")

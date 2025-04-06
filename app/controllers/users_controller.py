@@ -36,9 +36,14 @@ def attempt_quiz(quiz_id):
     if request.method == 'POST':
         score = 0
         for question in questions:
-            user_answer = request.form.get(f'question_{question.id}')
-            if user_answer and int(user_answer) == question.correct_option:
-                score += 1
+            selected_answers = request.form.getlist(f'question_{question.id}')
+            correct_answers = set(question.correct_options.split(','))
+            # user_answer = request.form.get(f'question_{question.id}')
+            # if user_answer and int(user_answer) == question.correct_option:
+            #     score += 1
+            if set(selected_answers) == correct_answers:
+                score+= 1
+
         user_score = Score(
             total_scored = score,
             quiz_id = quiz_id,

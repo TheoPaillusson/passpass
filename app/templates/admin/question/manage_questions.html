@@ -17,8 +17,10 @@
                 <tr>
                     <td>{{ question.id }}</td>
                     <td>{{ question.question_statement }}</td>
-                    <td><a href="">Edit</a></td>
-                    <td><a href="">Delete</a></td>
+                    <td><a href="{{ url_for('admin.edit_question', quiz_id=quiz.id, question_id=question.id) }}">Edit</a></td>
+                    <td><form action="{{ url_for('admin.delete_question', quiz_id=quiz.id, question_id=question.id) }}" method="post" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">Delete</button>
+                    </form></td>
                 </tr>
                 {% endfor %}
             </tbody>

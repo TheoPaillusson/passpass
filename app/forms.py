@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeField, DateTimeLocalField
+from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField
 from wtforms.validators import Email, Length, EqualTo, DataRequired
 
 class RegisterForm(FlaskForm):
@@ -38,8 +38,9 @@ class QuestionForm(FlaskForm):
     question_statement = TextAreaField('Question Statement', validators=[DataRequired()])
     option1 = StringField('Option 1', validators=[DataRequired()])
     option2 = StringField('Option 2', validators=[DataRequired()])
-    option3 = StringField('Option 3', validators=[DataRequired()])
-    option4 = StringField('Option 4', validators=[DataRequired()])
-    correct_option = IntegerField('Correct Option (1-4)', validators=[DataRequired()])
+    option3 = StringField('Option 3')
+    option4 = StringField('Option 4')
+    option5 = StringField('Option 5')
+    correct_options = TextAreaField('Correct Option (1-5)', validators=[DataRequired()])
     submit = SubmitField('Save')
                

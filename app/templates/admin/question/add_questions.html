@@ -49,7 +49,6 @@
             {% endif %}
             </div>
         <div>
-        <div>
             {{ form.option4.label }} 
             {{ form.option4 }}
             {% if form.option4.errors %}
@@ -59,19 +58,30 @@
             {% endfor %}
             </ul>
             {% endif %}
-            </div>
         </div>
         <div>
-            {{ form.correct_option.label }} 
-            {{ form.correct_option }}
-            {% if form.correct_option.errors %}
+            {{ form.option5.label }} 
+            {{ form.option5 }}
+            {% if form.option5.errors %}
             <ul class="errors">
-            {% for error in form.correct_option.errors %}
+            {% for error in form.option5.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <div>
+            {{ form.correct_options.label }} 
+            {{ form.correct_options }}
+            {% if form.correct_options.errors %}
+            <ul class="errors">
+            {% for error in form.correct_options.errors %}
                 <li>{{ error }}</li>
             {% endfor %}
             </ul>
             {% endif %}
             </div>
+        
         <div>
             {{ form.submit }}
         </div>
