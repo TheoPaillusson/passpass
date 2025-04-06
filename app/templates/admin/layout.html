@@ -5,21 +5,21 @@
     <title>{% block title %}{% endblock %} - Pass Pass Admin</title>
     {% endblock %}
     <style>
-        .container {
-        display:grid;
+      .container {
+        display: grid;
         grid-template-columns: 1fr 3fr;
         gap: 5px;
         padding: 5px;
-    }
+      }
       .errors li {
-        color : red;
+        color: red;
         font-size: 10px;
       }
       .flashes .success {
-        color : green;
+        color: green;
       }
       .flashes .error {
-        color : red;
+        color: red;
       }
       table {
         border-collapse: collapse;
@@ -35,55 +35,54 @@
       th {
         background-color: #f0f0f0;
       }
-
       th:nth-child(1) {
         width: 10%;
       }
-      th:nth-child(1) {
+      th:nth-child(2) {
         width: 20%;
       }
-    
     </style>
   </head>
   <body>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for category, message in messages %}
-    <li class="{{ category }}">{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-  {% endwith %} 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
     <ul>
       {% if current_user.is_authenticated %}
-      <li><a href="{{ url_for('auth.logout')}}">Logout</a></li>
+        <li><a href="{{ url_for('auth.logout')}}">Logout</a></li>
       {% else %}
-      <li><a href="{{ url_for('auth.login')}}">Login</a></li>
+        <li><a href="{{ url_for('auth.login')}}">Login</a></li>
       {% endif %}
     </ul>
-    <div id="content">
-        {% if current_user.is_authenticated %}
-        Salut {{ current_user.fullname }}!
-        {% endif %}
-        {% block content %}
+
+    {% if current_user.is_authenticated %}
+      <p>Salut {{ current_user.fullname }} !</p>
+    {% endif %}
+
     <div class="container">
       <div class="sidebar">
         {% block sidebar %}
-        <p>DEBUG: Sidebar from layout.html</p>
-        {% endblock %}
-      </div>
-
         <ul>
-            <li><a href="{{url_for('admin.admin_dashboard')}}">Admin Dashboard</a></li>
-            <li><a href="{{url_for('admin.manage_subjects')}}">Manage Subjects</a></li>
-            <li><a href="{{url_for('admin.manage_chapters')}}">Manage Chapters</a></li>
-            <li><a href="{{url_for('admin.manage_quizzes')}}">Manage Quizzes</a></li>
-            <li><a href="{{url_for('admin.manage_users')}}">Manage Users</a></li>
+          <li><a href="{{url_for('admin.admin_dashboard')}}">Admin Dashboard</a></li>
+          <li><a href="{{url_for('admin.manage_subjects')}}">Manage Subjects</a></li>
+          <li><a href="{{url_for('admin.manage_chapters')}}">Manage Chapters</a></li>
+          <li><a href="{{url_for('admin.manage_quizzes')}}">Manage Quizzes</a></li>
+          <li><a href="{{url_for('admin.manage_users')}}">Manage Users</a></li>
         </ul>
         {% endblock %}
       </div>
-    </div>
+
+      <div class="main-content">
+        {% block content %}
+        {% endblock %}
+      </div>
     </div>
   </body>
 </html>
