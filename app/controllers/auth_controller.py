@@ -44,10 +44,10 @@ def login():
             login_user(user)
             if user.is_admin:
                 flash("Administrateur connecté", category="success")
-                return redirect(url_for("admin_dashboard"))
+                return redirect(url_for("admin.admin_dashboard"))
             else:
                 flash('Authentification réussie !', category="success")
-                return redirect(url_for('dashboard'))
+                return redirect(url_for('users.dashboard'))
         else:
             flash("Nom ou mot de passe invalide", category="error") 
     return render_template("login.html", form=form)

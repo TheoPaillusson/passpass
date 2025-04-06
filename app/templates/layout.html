@@ -76,9 +76,9 @@
           <div>
           {% if current_user.is_authenticated %}
           <ul>
-             <li><a href="{{ url_for('dashboard')}}">Dashboard</a></li>
-             <li><a href="{{ url_for('leaderboard')}}">Leaderboard</a></li>
-             <li><a href="{{ url_for('select_quiz')}}">Select Quiz</a></li>
+             <li><a href="{{ url_for('users.dashboard')}}">Dashboard</a></li>
+             <li><a href="{{ url_for('users.leaderboard')}}">Leaderboard</a></li>
+             <li><a href="{{ url_for('users.select_quiz')}}">Select Quiz</a></li>
           </ul>
           {% endif %}
         </div>

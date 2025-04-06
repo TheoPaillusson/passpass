@@ -8,5 +8,9 @@ il obtient de nouveaux points dans le ranking
 - pouvoir choisir "questions auxquelles j'ai déjà répondu" 
 - questions auxquelles je n'ai pas répondu 
 
-- Problème du jour 
 - importer des images 
+- importer une correction
+
+vie du site : 
+
+- Problème du jour 

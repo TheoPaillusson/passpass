@@ -68,18 +68,22 @@
         {% endif %}
         {% block content %}
     <div class="container">
-        <ul>
-            <li><a href="{{url_for('admin_dashboard')}}">Admin Dashboard</a></li>
-            <li><a href="{{url_for('manage_subjects')}}">Manage Subjects</a></li>
-            <li><a href="{{url_for('manage_chapters')}}">Manage Chapters</a></li>
-            <li><a href="{{url_for('manage_quizzes')}}">Manage Quizzes</a></li>
-            <li><a href="{{url_for('manage_users')}}">Manage Users</a></li>
+      <div class="sidebar">
+        {% block sidebar %}
+        <p>DEBUG: Sidebar from layout.html</p>
+        {% endblock %}
+      </div>
 
+        <ul>
+            <li><a href="{{url_for('admin.admin_dashboard')}}">Admin Dashboard</a></li>
+            <li><a href="{{url_for('admin.manage_subjects')}}">Manage Subjects</a></li>
+            <li><a href="{{url_for('admin.manage_chapters')}}">Manage Chapters</a></li>
+            <li><a href="{{url_for('admin.manage_quizzes')}}">Manage Quizzes</a></li>
+            <li><a href="{{url_for('admin.manage_users')}}">Manage Users</a></li>
         </ul>
-        <div>
-        </div>
+        {% endblock %}
+      </div>
     </div>
-    {% endblock %}
     </div>
   </body>
 </html>

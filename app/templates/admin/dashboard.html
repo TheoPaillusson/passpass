@@ -1,4 +1,6 @@
 {% extends "admin/layout.html" %}
+<p>DEBUG: dashboard.html est bien chargé.</p>
+
 {% block title %}Admin Dashboard{% endblock %}
 {% block head %}
 {{ super() }}
@@ -10,7 +12,10 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
+
 {% block content %}
+{{ super() }}
+
 <h1>Admin Dashboard</h1>
 <div class="chart-container">
     <div>
@@ -54,17 +59,9 @@
             datasets: [{
                 label: "Completion Rate",
                 data: {{completion_rates|tojson}},
-                backgroundColor: [
-                'rgb(255, 99, 132)',
-                'rgb(54, 162, 235)',
-                'rgb(255, 205, 86)'
-                ],
                 hoverOffset: 4
             }]
         }
     })
   </script>
-<!-- {{ quiz_names }}
-{{ average_scores }}
-{{ completion_rates }}
-{% endblock %} -->
+  {% endblock %}
