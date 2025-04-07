@@ -1,9 +1,27 @@
+<script>
+    function previewImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('imagePreview');
+    
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+    
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+    
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    </script>
+
 {% extends "layout.html" %}
 {% block title %}Edit Question for {{ quiz.name }}{% endblock %}
 {% block content %}
 <h1 class="page-title">Edit Question for {{ quiz.name }}</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <div class="form-group">
         {{ form.question_statement.label(class_="form-label") }}
@@ -15,6 +33,19 @@
             {% endfor %}
         </ul>
         {% endif %}
+    </div>
+    <div class="form-group mt-3">
+        {{ form.question_image.label(class_="form-label") }}
+        <input type="file" name="question_image" id="question_image" class="form-control" accept="image/*" onchange="previewImage(event)">
+    </div>
+    
+    <div class="mt-3">
+        <label class="form-label">Aperçu de l’image :</label>
+        <img id="imagePreview"
+             src="{% if question and question.image_filename %}{{ url_for('static', filename='uploads/questions/' + question.image_filename) }}{% else %}#{% endif %}"
+             alt="Aperçu de l’image"
+             class="img-fluid rounded shadow"
+             style="max-width: 100%; height: auto; {% if not question or not question.image_filename %}display: none;{% endif %}">
     </div>
     <div class="form-group">
         {{ form.option1.label(class_="form-label") }}
@@ -61,6 +92,17 @@
         {% endif %}
     </div>
     <div class="form-group">
+        {{ form.option5.label(class_="form-label") }}
+        {{ form.option5(class_="form-control") }}
+        {% if form.option5.errors %}
+        <ul class="errors text-danger mt-2">
+            {% for error in form.option5.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    <div class="form-group">
         {{ form.correct_options.label(class_="form-label") }}
         {{ form.correct_options(class_="form-control") }}
         {% if form.correct_options.errors %}
@@ -71,8 +113,13 @@
         </ul>
         {% endif %}
     </div>
+
     <div>
         {{ form.submit(class_="btn btn-primary btn-block") }}
     </div>
 </form>
 {% endblock %}
+
+
+
+    

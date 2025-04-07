@@ -13,6 +13,12 @@ from flask_login import  login_required,  current_user
 import os
 from functools import wraps
 
+# gestion des images
+from werkzeug.utils import secure_filename
+import uuid
+from flask import Flask, current_app
+
+
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -147,17 +153,30 @@ def manage_questions(quiz_id):
                            quiz=quiz,
                            questions=questions)
 
+
+
 @admin_bp.route('/admin/question/add_questions/<int:quiz_id>', methods=['GET', 'POST'])
 @admin_login_required
 def add_question(quiz_id):
     form = QuestionForm()
     if form.validate_on_submit():
+        image_file = form.question_image.data
+        filename = None
+
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_path = os.path.join(current_app.root_path, 'static/uploads/questions', filename)
+            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+            image_file.save(upload_path)
+
         question = Question(
             question_statement = form.question_statement.data,
+            image_filename = filename,
             option1 = form.option1.data,
             option2 = form.option2.data,
             option3 = form.option3.data,
             option4 = form.option4.data,
+            option5 = form.option5.data,
             correct_options = form.correct_options.data,
             quiz_id = quiz_id
         )
@@ -165,6 +184,7 @@ def add_question(quiz_id):
         db.session.commit()
         flash('Question ajoutée avec succès', category="success")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+        
     return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id)
 
 @admin_bp.route("/admin/quiz/<int:quiz_id>/edit_question/<int:question_id>", methods=['GET', 'POST'])
@@ -179,15 +199,34 @@ def edit_question(quiz_id, question_id):
         question.option2 = form.option2.data
         question.option3 = form.option3.data
         question.option4 = form.option4.data
-        question.option5 = form.option4.data
+        question.option5 = form.option5.data
         question.correct_options = form.correct_options.data
         question.quiz_id = quiz_id
+
+
+        #traitement de l'image
+        if form.question_image.data:
+            if question.image_filename:
+                old_path = os.path.join(current_app.root_path, 'static' 'uploads', 'questions', question.image_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            #save de l'image 
+            image = form.question_image.data
+            filename = secure_filename(image.filename)
+            image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'questions')
+            os.makedirs(image_path, exist_ok=True)
+            image.save(os.path.join(image_path, filename))
+            question.image_filename = filename
+            
         db.session.commit()
-        flash("Question updated successfully!", category="success")
+        flash("Question mise à jour !", category="success")
         return redirect(url_for("admin.manage_questions", quiz_id=quiz_id))
     return render_template("admin/question/edit_question.html",
                            form=form,
-                           quiz=quiz)
+                           quiz=quiz,
+                           question=question
+                           )
 
 @admin_bp.route("/admin/quiz/<int:quiz_id>/delete_question/<int:question_id>", methods=['POST'])
 @admin_login_required

@@ -2,11 +2,24 @@
 {% block title %}Ajouter une Question {% endblock %}
 {% block content %}
 <h2>Ajouter une Question pour {{ quiz_id }}</h2>
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
         <div>
         {{ form.question_statement.label }} 
         {{ form.question_statement }}
+        {{ form.question_image.label }}
+        {{ form.question_image }}
+
+        {% if question.image_filename %}
+        <div class="mb-3">
+            <label class="form-label">Image actuelle :</label>
+            <div class="question-image-wrapper">
+                <img src="{{ url_for('static', filename='uploads/questions/' + question.image_filename) }}"
+                    alt="Image actuelle" class="img-fluid rounded shadow">
+            </div>
+        </div>
+        {% endif %}
+        
         {% if form.question_statement.errors %}
         <ul class="errors">
         {% for error in form.question_statement.errors %}

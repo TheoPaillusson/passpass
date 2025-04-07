@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField
 from wtforms.validators import Email, Length, EqualTo, DataRequired
+from flask_wtf.file import FileField, FileAllowed
+
 
 class RegisterForm(FlaskForm):
     username = StringField('Email', validators=[DataRequired(), Email()])
@@ -36,6 +38,7 @@ class QuizForm(FlaskForm):
 
 class QuestionForm(FlaskForm):
     question_statement = TextAreaField('Question Statement', validators=[DataRequired()])
+    question_image = FileField('Question Image', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Formats acceptés : jpg, jpeg, png, gif')])
     option1 = StringField('Option 1', validators=[DataRequired()])
     option2 = StringField('Option 2', validators=[DataRequired()])
     option3 = StringField('Option 3')

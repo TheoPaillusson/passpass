@@ -25,6 +25,9 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(admin_bp)
 
+# gestion d'image 
+app.config['UPLOAD_FOLDER'] = 'static/uploads/questions'
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB max
 
 register_commands(app)
 

@@ -1,4 +1,17 @@
+_______________SUCCESS PODIUM_______________
+
+- Peut avoir plusieures bonnes réponses : OK
+- les questions peuvent avoir 5 réponses possibles : OK 
+- importer des images : OK
+
+
 A prévoir dans le refactoring : 
+
+_______________Questions REFACTORING_______________
+
+- l'option 5 n'est pas enregistrée dans edit question, c'est l'option 4 qui remplit auto l'option 5
+- les none apparaissent lorsque la question a moins de 5 réponses
+- les scores apparaissent deux fois en haut a gauche et au milieu. celui du milieu est faux (dernier score de l'user au test)
 
 - lorsqu'un user refait des questions aux quelles il a déjà répondu juste, 
 il obtient de nouveaux points dans le ranking
@@ -8,8 +21,21 @@ il obtient de nouveaux points dans le ranking
 - pouvoir choisir "questions auxquelles j'ai déjà répondu" 
 - questions auxquelles je n'ai pas répondu 
 
-- importer des images 
+
 - importer une correction
+
+- 
+
+_______________Quiz REFACTORING_______________
+
+- probleme obligé de renseigner l'heure dans l'ajout de quiz > ne sert à rien 
+
+_______________Base de données_______________
+
+- migration possible de la base de données sans avoir à la détruire
+
+
+
 
 vie du site : 
 

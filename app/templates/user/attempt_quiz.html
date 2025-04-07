@@ -22,6 +22,12 @@
     {% for question in questions %}
     <div>
         <h5>Q: {{question.question_statement }}</h5>
+         {% if question.image_filename %}
+            <div class="mb-3">
+                <img src="{{ url_for('static', filename='uploads/questions/' + question.image_filename)}}"
+                alt="Question Image" style="max-width: 100%; max-height: 300px;">
+            </div>
+        {% endif %}
         <h6>Choisis tes réponses:</h6>
         <div>
             <input type="checkbox" name="question_{{ question.id }}" value="1">
