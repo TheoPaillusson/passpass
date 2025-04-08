@@ -11,3 +11,13 @@ class Question(db.Model):
     option5 = db.Column(db.String, nullable=True)
     correct_options = db.Column(db.String, nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+
+    def get_options(self):
+        options = [
+            (1, self.option1),
+            (2, self.option2),
+            (3, self.option3),
+            (4, self.option4),
+            (5, self.option5),
+        ]
+        return [(index, opt) for index, opt in options if opt]

@@ -1,11 +1,21 @@
 /* 📁 Fichier : app/static/css/style.css */
 
+#div{
+
+  width:100%;
+}
+
+* {
+  box-sizing: border-box;
+ }
+
 /* Base */
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f8fb;
     color: #333;
+    box-sizing: border-box;
   }
   
   a {
@@ -87,15 +97,19 @@ body {
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    text-align: left;
+    font-size: 14px;
   }
   
   input[type="text"], select, textarea {
-    width: 100%;
+    width: 50%;
+    height: 10%;
     padding: 10px;
     margin-top: 6px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing: border-box;
   }
   
   button, input[type="submit"] {

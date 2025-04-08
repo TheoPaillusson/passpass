@@ -6,7 +6,7 @@
 {{ form.hidden_tag() }}
     <div>
     {{ form.username.label }} 
-    {{ form.username(size=20) }}
+    {{ form.username }}
     {% if form.username.errors %}
     <ul class="errors">
     {% for error in form.username.errors %}
@@ -17,7 +17,7 @@
     </div>
     <div>
         {{ form.password.label }} 
-        {{ form.password(size=20) }}
+        {{ form.password }}
         {% if form.password.errors %}
         <ul class="errors">
         {% for error in form.password.errors %}
