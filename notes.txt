@@ -1,30 +1,43 @@
 _______________SUCCESS PODIUM_______________
 
-- Peut avoir plusieures bonnes réponses : OK
-- les questions peuvent avoir 5 réponses possibles : OK 
-- importer des images : OK
-
-
-A prévoir dans le refactoring : 
+- Peut avoir plusieures bonnes réponses 
+- les questions peuvent avoir 5 réponses possibles 
+- importer des images dans add question 
+- changer l'image dans edit question 
+- l'option 5 n'est pas enregistrée dans edit question, c'est l'option 4 qui remplit auto l'option 5
+- les none apparaissent lorsque la question a moins de 5 réponses
+- helper question
+- add question qui undefined error 
 
 _______________Questions REFACTORING_______________
 
-- l'option 5 n'est pas enregistrée dans edit question, c'est l'option 4 qui remplit auto l'option 5
-- les none apparaissent lorsque la question a moins de 5 réponses
+- sous-questions
+    -> finir l'implémentation des sous-questions
+    -> l'affichage pour des sous-questions dans attempt quiz
+
+- pouvoir décoréller les questions des quiz
+
+- ux login champs pas de la même taille
+
+- voir le recap du quiz : les questions auxquelles j'ai eu bon et celles ou j'ai eu faux 
+
+- synthaxe Latex dans les questions pour les éléments mathématiques
+
 - les scores apparaissent deux fois en haut a gauche et au milieu. celui du milieu est faux (dernier score de l'user au test)
 
 - lorsqu'un user refait des questions aux quelles il a déjà répondu juste, 
 il obtient de nouveaux points dans le ranking
 
-- pouvoir décoréller les questions des quiz
 - pouvoir choisir le nombre de questions auxquelles répondre 
+
 - pouvoir choisir "questions auxquelles j'ai déjà répondu" 
 - questions auxquelles je n'ai pas répondu 
+- questions auxquelles j'ai eu faux ou j'ai eu bon 
 
 
 - importer une correction
 
-- 
+
 
 _______________Quiz REFACTORING_______________
 
@@ -33,6 +46,7 @@ _______________Quiz REFACTORING_______________
 _______________Base de données_______________
 
 - migration possible de la base de données sans avoir à la détruire
+- plusieurs usernames avec le même ID 
 
 
 

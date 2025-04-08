@@ -32,12 +32,21 @@ def dashboard():
 def attempt_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     questions = quiz.questions.copy()
+
+    full_questions = []
+    for q in questions:
+        full_questions.append(q)
+        full_questions.extend(q.subquestions)
+
     shuffle(questions)
+
     if request.method == 'POST':
         score = 0
-        for question in questions:
+        for question in full_questions:
             selected_answers = request.form.getlist(f'question_{question.id}')
-            correct_answers = set(question.correct_options.split(','))
+            correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
+            
+
             # user_answer = request.form.get(f'question_{question.id}')
             # if user_answer and int(user_answer) == question.correct_option:
             #     score += 1
