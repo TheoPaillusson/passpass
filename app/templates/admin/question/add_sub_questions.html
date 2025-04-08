@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Ajouter une sous-question à : <strong>{{ question.question_statement }}...</strong></h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.question_statement.label }}
+            {{ form.question_statement }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.question_image.label(class="form-label") }}
+            {{ form.question_image(class="form-control") }}
+        </div>
+
+        <hr>
+
+        <div class="mb-3">
+            {{ form.option1.label(class="form-label") }}
+            {{ form.option1(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.option2.label(class="form-label") }}
+            {{ form.option2(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.option3.label(class="form-label") }}
+            {{ form.option3(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.option4.label(class="form-label") }}
+            {{ form.option4(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.option5.label(class="form-label") }}
+            {{ form.option5(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.correct_options.label(class="form-label") }}
+            {{ form.correct_options(class="form-control") }}
+            <div class="form-text">Indique les bonnes réponses séparées par une virgule (ex: 1,3,4)</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Ajouter la sous-question</button>
+        <a href="{{ url_for('admin.edit_question', quiz_id=question.quiz_id, question_id=question.id) }}" class="btn btn-secondary">Retour</a>
+    </form>
+</div>
+{% endblock %}

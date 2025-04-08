@@ -4,11 +4,12 @@ from app import db
 from flask import render_template, redirect, flash, url_for
 from app.models.chapter import Chapter
 from app.models.question import Question
+from app.models.sub_question import SubQuestion
 from app.models.quiz import Quiz
 from app.models.score import Score
 from app.models.subject import Subject
 from app.models.user import User
-from app.forms import SubjectForm, ChapterForm, QuizForm, QuestionForm
+from app.forms import SubjectForm, ChapterForm, QuizForm, QuestionForm, SubQuestionForm
 from flask_login import  login_required,  current_user
 import os
 from functools import wraps
@@ -154,11 +155,57 @@ def manage_questions(quiz_id):
                            questions=questions)
 
 
+## add questions avec sous-questions 
+
+@admin_bp.route('/admin/question/add_sub_questions/<int:question_id>', methods=['GET', 'POST'])
+@admin_login_required
+def add_sub_question(question_id):
+    question = Question.query.get_or_404(question_id)
+    form = SubQuestionForm()
+
+    if form.validate_on_submit():
+        image_file = form.question_image.data
+        filename = None
+
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_path = os.path.join(current_app.root_path, 'static/uploads/sub_questions', filename)
+            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+            image_file.save(upload_path)
+
+        sub_question = SubQuestion(
+            question_statement=form.question_statement.data,
+            question_image=filename,
+            option1=form.option1.data,
+            option2=form.option2.data,
+            option3=form.option3.data,
+            option4=form.option4.data,
+            option5=form.option5.data,
+            correct_options=form.correct_options.data,
+            main_question_id=question.id
+        )
+
+        if question.id is None:
+            print("Erreur : ID de la question principale est None")
+        else:
+            print(f"ID de la question principale : {question.id}")
+
+        db.session.add(sub_question)
+        db.session.commit()
+        flash('Sous-question ajoutée avec succès', category="success")
+        return redirect(url_for('admin.manage_questions', quiz_id=question.quiz_id))
+
+    print(form)
+    return render_template('admin/question/add_sub_questions.html', form=form, question=question)
+
+
+
 
 @admin_bp.route('/admin/question/add_questions/<int:quiz_id>', methods=['GET', 'POST'])
 @admin_login_required
 def add_question(quiz_id):
     form = QuestionForm()
+    question = None
     if form.validate_on_submit():
         image_file = form.question_image.data
         filename = None
@@ -184,8 +231,8 @@ def add_question(quiz_id):
         db.session.commit()
         flash('Question ajoutée avec succès', category="success")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
-        
-    return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id)
+    
+    return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id, question=question)
 
 @admin_bp.route("/admin/quiz/<int:quiz_id>/edit_question/<int:question_id>", methods=['GET', 'POST'])
 @admin_login_required

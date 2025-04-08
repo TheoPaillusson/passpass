@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField
-from wtforms.validators import Email, Length, EqualTo, DataRequired
+from wtforms.validators import Email, Length, EqualTo, DataRequired, Optional
 from flask_wtf.file import FileField, FileAllowed
 
 
@@ -46,4 +46,15 @@ class QuestionForm(FlaskForm):
     option5 = StringField('Option 5')
     correct_options = TextAreaField('Correct Option (1-5)', validators=[DataRequired()])
     submit = SubmitField('Save')
-               
+
+class SubQuestionForm(FlaskForm):
+    question_statement = TextAreaField('Énoncé de la sous-question', validators=[DataRequired()])
+    question_image = FileField('Image (optionnelle)', validators=[Optional(), FileAllowed(['jpg', 'png', 'jpeg'], 'Images seulement !')])
+    
+    option1 = StringField('Option 1', validators=[DataRequired()])
+    option2 = StringField('Option 2', validators=[Optional()])
+    option3 = StringField('Option 3', validators=[Optional()])
+    option4 = StringField('Option 4', validators=[Optional()])
+    option5 = StringField('Option 5', validators=[Optional()])
+
+    correct_options = StringField('Numéros des bonnes réponses (ex: 1,3)', validators=[DataRequired()])

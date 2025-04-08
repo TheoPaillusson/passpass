@@ -10,7 +10,7 @@
         {{ form.question_image.label }}
         {{ form.question_image }}
 
-        {% if question.image_filename %}
+        {% if question and question.image_filename %}
         <div class="mb-3">
             <label class="form-label">Image actuelle :</label>
             <div class="question-image-wrapper">
