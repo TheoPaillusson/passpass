@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField
+from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField, SelectMultipleField, FieldList, FormField
 from wtforms.validators import Email, Length, EqualTo, DataRequired, Optional
 from flask_wtf.file import FileField, FileAllowed
 
@@ -36,6 +36,20 @@ class QuizForm(FlaskForm):
     chapter_id = SelectField('Chapter', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Submit')     
 
+class SubQuestionForm(FlaskForm):
+    question_statement = StringField('Énoncé de la sous-question', validators=[DataRequired()])
+    question_image = FileField('Image', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images seulement')])
+    option1 = StringField('Option 1', validators=[DataRequired()])
+    option2 = StringField('Option 2', validators=[DataRequired()])
+    option3 = StringField('Option 3')
+    option4 = StringField('Option 4')
+    option5 = StringField('Option 5')
+    correct_options = TextAreaField('Bonne(s) réponse(s)', validators=[DataRequired()])
+
+    class Meta:
+        csrf = False #DÉSACTIVATION du CSRF pour les sous-formulaires
+
+
 class QuestionForm(FlaskForm):
     question_statement = TextAreaField('Question Statement', validators=[DataRequired()])
     question_image = FileField('Question Image', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Formats acceptés : jpg, jpeg, png, gif')])
@@ -45,16 +59,7 @@ class QuestionForm(FlaskForm):
     option4 = StringField('Option 4')
     option5 = StringField('Option 5')
     correct_options = TextAreaField('Correct Option (1-5)', validators=[DataRequired()])
-    submit = SubmitField('Save')
-
-class SubQuestionForm(FlaskForm):
-    question_statement = TextAreaField('Énoncé de la sous-question', validators=[DataRequired()])
-    question_image = FileField('Image (optionnelle)', validators=[Optional(), FileAllowed(['jpg', 'png', 'jpeg'], 'Images seulement !')])
+    sub_questions = FieldList(FormField(SubQuestionForm), min_entries=0, label="Sous-Questions")
+    submit = SubmitField('Valider')
     
-    option1 = StringField('Option 1', validators=[DataRequired()])
-    option2 = StringField('Option 2', validators=[Optional()])
-    option3 = StringField('Option 3', validators=[Optional()])
-    option4 = StringField('Option 4', validators=[Optional()])
-    option5 = StringField('Option 5', validators=[Optional()])
 
-    correct_options = StringField('Numéros des bonnes réponses (ex: 1,3)', validators=[DataRequired()])

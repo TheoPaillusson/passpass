@@ -36,9 +36,8 @@ def attempt_quiz(quiz_id):
     full_questions = []
     for q in questions:
         full_questions.append(q)
-        full_questions.extend(q.subquestions)
+        full_questions.extend(q.sub_questions)
 
-    shuffle(questions)
 
     if request.method == 'POST':
         score = 0
@@ -46,10 +45,6 @@ def attempt_quiz(quiz_id):
             selected_answers = request.form.getlist(f'question_{question.id}')
             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
             
-
-            # user_answer = request.form.get(f'question_{question.id}')
-            # if user_answer and int(user_answer) == question.correct_option:
-            #     score += 1
             if set(selected_answers) == correct_answers:
                 score+= 1
 
@@ -60,9 +55,9 @@ def attempt_quiz(quiz_id):
         )
         db.session.add(user_score)
         db.session.commit()
-        flash(f'Votre score : {score}/{len(questions)}', category="success")
+        flash(f'Votre score : {score}/{len(full_questions)}', category="success")
         return redirect(url_for("users.quiz_results", quiz_id=quiz_id))
-    return render_template("user/attempt_quiz.html", quiz=quiz, questions=questions)
+    return render_template("user/attempt_quiz.html", quiz=quiz, questions=full_questions)
 
 @users_bp.route('/quiz_results/<int:quiz_id>', )
 @login_required

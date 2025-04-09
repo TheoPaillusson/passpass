@@ -70,33 +70,6 @@
 
 
 
-    <div>
-    {% for question in questions %}
-    <div>
-        <h5>Q: {{question.question_statement }}</h5>
-         {% if question.image_filename %}
-            <div class="mb-3">
-                <img src="{{ url_for('static', filename='uploads/questions/' + question.image_filename)}}"
-                alt="Question Image" style="max-width: 100%; max-height: 300px;">
-            </div>
-        {% endif %}
-
-        <h6>Choisis tes réponses:</h6>
-        
-        
-        {% for index, option in question.get_options() %}
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox"
-                    name="question_{{ question.id }}" value="{{ index }}"
-                    id="option{{ index }}_{{ question.id }}">
-            <label class="form-check-label" for="option{{ index }}_{{ question.id }}">
-                {{ option }}
-            </label>
-        </div>
-        {% endfor %}
-    </div>
-    {% endfor %}
-    </div>
 
 
     

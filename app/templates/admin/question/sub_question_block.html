@@ -1,0 +1,32 @@
+<div class="card mb-3 p-3 border sub-question-block">
+    <div>
+        {{ subform.question_statement.label }} 
+        {{ subform.question_statement }}
+    </div>
+
+    <div>
+        {{ subform.question_image.label }} 
+        {{ subform.question_image }}
+    </div>
+
+    <div>
+        {{ subform.option1.label }} {{ subform.option1 }}
+    </div>
+    <div>
+        {{ subform.option2.label }} {{ subform.option2 }}
+    </div>
+    <div>
+        {{ subform.option3.label }} {{ subform.option3 }}
+    </div>
+    <div>
+        {{ subform.option4.label }} {{ subform.option4 }}
+    </div>
+    <div>
+        {{ subform.option5.label }} {{ subform.option5 }}
+    </div>
+    <div>
+        {{ subform.correct_options.label }} {{ subform.correct_options }}
+    </div>
+
+    <button type="button" class="btn btn-danger btn-sm remove-sub-question mt-2">Supprimer cette sous-question</button>
+</div>

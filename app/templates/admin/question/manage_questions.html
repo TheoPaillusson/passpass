@@ -1,30 +1,39 @@
 {% extends "admin/layout.html" %}
-{% block title %}Manage Quiz Questions{% endblock %}
+{% block title %}Gérer les Questions du Quiz{% endblock %}
 {% block content %}
 
-<h2>Manage Questions for {{quiz.name}} </h2>
-<a href="{{url_for('admin.add_question', quiz_id=quiz.id)}}">Add Quiz Question</a>
-<div>
-    <table>
+<h2>Gérer les questions pour le quiz : <strong>{{ quiz.name }}</strong></h2>
+
+<a href="{{ url_for('admin.add_question', quiz_id=quiz.id) }}">➕ Ajouter une question</a>
+
+<div class="mt-4">
+    <table border="1" cellpadding="10" cellspacing="0">
         <thead>
             <tr>
-            <th>ID</th>
-            <th>Statement</th>
-            <th colspan="2">Actions</th>
+                <th>ID</th>
+                <th>Énoncé</th>
+                <th colspan="2">Actions</th>
             </tr>   
-            <tbody>
-                {% for question in questions %}
+        </thead>
+        <tbody>
+            {% for question in questions %}
+                {% if not question.parent_id %}
                 <tr>
                     <td>{{ question.id }}</td>
                     <td>{{ question.question_statement }}</td>
-                    <td><a href="{{ url_for('admin.edit_question', quiz_id=quiz.id, question_id=question.id) }}">Edit</a></td>
-                    <td><form action="{{ url_for('admin.delete_question', quiz_id=quiz.id, question_id=question.id) }}" method="post" style="display:inline;">
-                        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">Delete</button>
-                    </form></td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_question', quiz_id=quiz.id, question_id=question.id) }}">✏️ Modifier</a>
+                    </td>
+                    <td>
+                        <form action="{{ url_for('admin.delete_question', quiz_id=quiz.id, question_id=question.id) }}" method="post" style="display:inline;">
+                            <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">🗑️ Supprimer</button>
+                        </form>
+                    </td>
                 </tr>
-                {% endfor %}
-            </tbody>
-        </thead>
+                {% endif %}
+            {% endfor %}
+        </tbody>
     </table>
 </div>
+
 {% endblock %}

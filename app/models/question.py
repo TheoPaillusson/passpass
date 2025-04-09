@@ -10,9 +10,14 @@ class Question(db.Model):
     option4 = db.Column(db.String, nullable=True)
     option5 = db.Column(db.String, nullable=True)
     correct_options = db.Column(db.String, nullable=False)
+   
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=True)
-    subquestions = db.relationship('Question', backref=db.backref('parent', remote_side=[id]), lazy='joined')
+    sub_questions = db.relationship(
+        'Question', 
+        backref=db.backref('parent', remote_side=[id]), 
+        cascade = "all, delete-orphan",
+        lazy='joined')
 
     def get_options(self):
         options = [

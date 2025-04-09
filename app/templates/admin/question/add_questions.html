@@ -1,102 +1,79 @@
 {% extends "admin/layout.html" %}
-{% block title %}Ajouter une Question {% endblock %}
+{% block title %}Ajouter une Question{% endblock %}
+
 {% block content %}
 <h2>Ajouter une Question pour {{ quiz_id }}</h2>
+
 <form method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
-        <div>
+
+    <div>
         {{ form.question_statement.label }} 
         {{ form.question_statement }}
+    </div>
+    <div>
         {{ form.question_image.label }}
         {{ form.question_image }}
+    </div>
+    <div>
+        {{ form.option1.label }} {{ form.option1 }}
+    </div>
+    <div>
+        {{ form.option2.label }} {{ form.option2 }}
+    </div>
+    <div>
+        {{ form.option3.label }} {{ form.option3 }}
+    </div>
+    <div>
+        {{ form.option4.label }} {{ form.option4 }}
+    </div>
+    <div>
+        {{ form.option5.label }} {{ form.option5 }}
+    </div>
+    <div>
+        {{ form.correct_options.label }} {{ form.correct_options }}
+    </div>
 
-        {% if question and question.image_filename %}
-        <div class="mb-3">
-            <label class="form-label">Image actuelle :</label>
-            <div class="question-image-wrapper">
-                <img src="{{ url_for('static', filename='uploads/questions/' + question.image_filename) }}"
-                    alt="Image actuelle" class="img-fluid rounded shadow">
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if form.question_statement.errors %}
-        <ul class="errors">
-        {% for error in form.question_statement.errors %}
-            <li>{{ error }}</li>
+    <hr>
+    <h3>Sous-questions</h3>
+    <div id="sub-questions">
+        {% for subform in form.sub_questions %}
+            {% include 'admin/question/sub_question_block.html' %}
         {% endfor %}
-        </ul>
-        {% endif %}
-        </div>
-        <div>
-            {{ form.option1.label }} 
-            {{ form.option1 }}
-            {% if form.option1.errors %}
-            <ul class="errors">
-            {% for error in form.option1.errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-            </div>
-        <div>
-            {{ form.option2.label }} 
-            {{ form.option2 }}
-            {% if form.option2.errors %}
-            <ul class="errors">
-            {% for error in form.option2.errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-            </div>
-        <div>
-            {{ form.option3.label }} 
-            {{ form.option3 }}
-            {% if form.option3.errors %}
-            <ul class="errors">
-            {% for error in form.option3.errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-            </div>
-        <div>
-            {{ form.option4.label }} 
-            {{ form.option4 }}
-            {% if form.option4.errors %}
-            <ul class="errors">
-            {% for error in form.option4.errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-        <div>
-            {{ form.option5.label }} 
-            {{ form.option5 }}
-            {% if form.option5.errors %}
-            <ul class="errors">
-            {% for error in form.option5.errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-        <div>
-            {{ form.correct_options.label }} 
-            {{ form.correct_options }}
-            {% if form.correct_options.errors %}
-            <ul class="errors">
-            {% for error in form.correct_options.errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-            </div>
-        
-        <div>
-            {{ form.submit }}
-        </div>
-    </form>
+    </div>
+
+    <button type="button" id="add-sub-question" class="btn btn-secondary my-3">Ajouter une sous-question</button>
+
+    <!-- Template caché pour duplication JS -->
+    {% set subform = empty_sub_form %}
+    <template id="empty-sub-question-template">
+        {% include 'admin/question/sub_question_block.html' with context %}
+    </template>
+
+    <div>
+        {{ form.submit }}
+    </div>
+</form>
+
+<script>
+    // Code pour ajouter une sous-question (déjà présent)
+    document.getElementById("add-sub-question").addEventListener("click", function () {
+        const container = document.getElementById("sub-questions");
+        const template = document.getElementById("empty-sub-question-template").innerHTML;
+        const index = container.children.length;
+
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = template.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
+        container.appendChild(tempDiv.firstElementChild);
+    });
+
+    // Supprimer dynamiquement une sous-question
+    document.addEventListener("click", function (e) {
+        if (e.target && e.target.classList.contains("remove-sub-question")) {
+            e.target.closest(".sub-question-block").remove();
+        }
+    });
+</script>
+
+
 {% endblock %}

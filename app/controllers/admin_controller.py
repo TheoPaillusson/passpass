@@ -4,7 +4,6 @@ from app import db
 from flask import render_template, redirect, flash, url_for
 from app.models.chapter import Chapter
 from app.models.question import Question
-from app.models.sub_question import SubQuestion
 from app.models.quiz import Quiz
 from app.models.score import Score
 from app.models.subject import Subject
@@ -13,6 +12,7 @@ from app.forms import SubjectForm, ChapterForm, QuizForm, QuestionForm, SubQuest
 from flask_login import  login_required,  current_user
 import os
 from functools import wraps
+from flask import request
 
 # gestion des images
 from werkzeug.utils import secure_filename
@@ -149,64 +149,21 @@ def delete_chapter(id):
 @admin_login_required
 def manage_questions(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
-    questions = quiz.questions
+    questions = Question.query.filter_by(quiz_id=quiz_id, parent_id=None).all()
     return render_template("admin/question/manage_questions.html",
                            quiz=quiz,
                            questions=questions)
 
 
-## add questions avec sous-questions 
-
-@admin_bp.route('/admin/question/add_sub_questions/<int:question_id>', methods=['GET', 'POST'])
-@admin_login_required
-def add_sub_question(question_id):
-    question = Question.query.get_or_404(question_id)
-    form = SubQuestionForm()
-
-    if form.validate_on_submit():
-        image_file = form.question_image.data
-        filename = None
-
-        if image_file:
-            filename = secure_filename(image_file.filename)
-            upload_path = os.path.join(current_app.root_path, 'static/uploads/sub_questions', filename)
-            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-            image_file.save(upload_path)
-
-        sub_question = SubQuestion(
-            question_statement=form.question_statement.data,
-            question_image=filename,
-            option1=form.option1.data,
-            option2=form.option2.data,
-            option3=form.option3.data,
-            option4=form.option4.data,
-            option5=form.option5.data,
-            correct_options=form.correct_options.data,
-            main_question_id=question.id
-        )
-
-        if question.id is None:
-            print("Erreur : ID de la question principale est None")
-        else:
-            print(f"ID de la question principale : {question.id}")
-
-        db.session.add(sub_question)
-        db.session.commit()
-        flash('Sous-question ajoutée avec succès', category="success")
-        return redirect(url_for('admin.manage_questions', quiz_id=question.quiz_id))
-
-    print(form)
-    return render_template('admin/question/add_sub_questions.html', form=form, question=question)
-
-
-
-
 @admin_bp.route('/admin/question/add_questions/<int:quiz_id>', methods=['GET', 'POST'])
 @admin_login_required
 def add_question(quiz_id):
-    form = QuestionForm()
-    question = None
+    form = QuestionForm(prefix="form")
+
+    empty_sub_form = SubQuestionForm(prefix="sub_questions-__prefix__")
+
     if form.validate_on_submit():
+        print("form validé !")
         image_file = form.question_image.data
         filename = None
 
@@ -229,56 +186,130 @@ def add_question(quiz_id):
         )
         db.session.add(question)
         db.session.commit()
-        flash('Question ajoutée avec succès', category="success")
-        return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
-    
-    return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id, question=question)
 
-@admin_bp.route("/admin/quiz/<int:quiz_id>/edit_question/<int:question_id>", methods=['GET', 'POST'])
+        # traitement des sous-questions
+
+        for subform in form.sub_questions.entries:
+            sub_image = subform.form.question_image.data
+            sub_filename = None
+            if sub_image:
+                sub_filename = secure_filename(sub_image.filename)
+                sub_image_path = os.path.join(current_app.root_path, 'static/uploads/questions', sub_filename)
+                os.makedirs(os.path.dirname(sub_image_path), exist_ok=True)
+                image_file.save(sub_image_path)
+
+            sub_question = Question(
+                question_statement = subform.form.question_statement.data,
+                image_filename=sub_filename,
+                option1=subform.form.option1.data,
+                option2=subform.form.option2.data,
+                option3=subform.form.option3.data,
+                option4=subform.form.option4.data,
+                option5=subform.form.option5.data,
+                correct_options=','.join(subform.form.correct_options.data),
+                quiz_id=quiz_id,
+                parent_id=question.id  # Clé étrangère vers la question principale
+
+            )
+            db.session.add(sub_question)
+        db.session.commit()
+        flash('Question (et sous-questions) ajoutée(s) avec succès', category="success")
+        return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+    else:
+        print('Form errors', form.errors)
+    
+    return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id, empty_sub_form=empty_sub_form)
+
+
+
+### ajout de l'édition de sous-questions #### 
+
+@admin_bp.route('/admin/question/edit/<int:quiz_id>/<int:question_id>', methods=['GET', 'POST'])
 @admin_login_required
 def edit_question(quiz_id, question_id):
-    quiz = Quiz.query.get_or_404(quiz_id)
     question = Question.query.get_or_404(question_id)
+
+    # Ne pas permettre l'édition des sous-questions seules
+    if question.parent_id:
+        flash("Impossible d'éditer une sous-question directement.", "warning")
+        return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+
+    # Créer un formulaire avec les données existantes
     form = QuestionForm(obj=question)
+
+    # Charger les sous-questions dans le FieldList
+    if request.method == 'GET':
+        form.sub_questions.entries = []  # vider les anciennes entrées
+        for sub_q in question.sub_questions:
+            sub_form = QuestionForm(obj=sub_q)
+            form.sub_questions.append_entry(sub_form.data)
+
     if form.validate_on_submit():
+        # Met à jour la question principale
+        image_file = form.question_image.data
+        filename = question.image_filename
+
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_path = os.path.join(current_app.root_path, 'static/uploads/questions', filename)
+            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+            image_file.save(upload_path)
+
         question.question_statement = form.question_statement.data
+        question.image_filename = filename
         question.option1 = form.option1.data
         question.option2 = form.option2.data
         question.option3 = form.option3.data
         question.option4 = form.option4.data
         question.option5 = form.option5.data
         question.correct_options = form.correct_options.data
-        question.quiz_id = quiz_id
 
+        # Supprimer les anciennes sous-questions
+        Question.query.filter_by(parent_id=question.id).delete()
 
-        #traitement de l'image
-        if form.question_image.data:
-            if question.image_filename:
-                old_path = os.path.join(current_app.root_path, 'static' 'uploads', 'questions', question.image_filename)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            
-            #save de l'image 
-            image = form.question_image.data
-            filename = secure_filename(image.filename)
-            image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'questions')
-            os.makedirs(image_path, exist_ok=True)
-            image.save(os.path.join(image_path, filename))
-            question.image_filename = filename
-            
+        # Ajouter les nouvelles sous-questions
+        for subform in form.sub_questions.entries:
+            sub_image = subform.form.question_image.data
+            sub_filename = None
+            if sub_image:
+                sub_filename = secure_filename(sub_image.filename)
+                sub_image_path = os.path.join(current_app.root_path, 'static/uploads/questions', sub_filename)
+                os.makedirs(os.path.dirname(sub_image_path), exist_ok=True)
+                sub_image.save(sub_image_path)
+
+            sub_question = Question(
+                question_statement=subform.form.question_statement.data,
+                image_filename=sub_filename,
+                option1=subform.form.option1.data,
+                option2=subform.form.option2.data,
+                option3=subform.form.option3.data,
+                option4=subform.form.option4.data,
+                option5=subform.form.option5.data,
+                correct_options=','.join(subform.form.correct_options.data),
+                quiz_id=quiz_id,
+                parent_id=question.id
+            )
+            db.session.add(sub_question)
+
         db.session.commit()
-        flash("Question mise à jour !", category="success")
-        return redirect(url_for("admin.manage_questions", quiz_id=quiz_id))
-    return render_template("admin/question/edit_question.html",
-                           form=form,
-                           quiz=quiz,
-                           question=question
-                           )
+        flash("Question mise à jour avec succès.", "success")
+        return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+    else:
+        if form.errors:
+            print("Form errors:", form.errors)
+
+    return render_template("admin/question/edit_question.html", form=form, question=question, quiz_id=quiz_id)
+
 
 @admin_bp.route("/admin/quiz/<int:quiz_id>/delete_question/<int:question_id>", methods=['POST'])
 @admin_login_required
 def delete_question(quiz_id, question_id):
     question = Question.query.get_or_404(question_id)
+
+    if question.parent_id is not None:
+        flash("Impossible de supprimer une sous-question directement", category="error")
+        return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+    
     db.session.delete(question)
     db.session.commit()
     flash("Question deleted successfully!", category="success")
