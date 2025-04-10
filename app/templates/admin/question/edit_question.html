@@ -1,27 +1,11 @@
-<script>
-    function previewImage(event) {
-        const input = event.target;
-        const preview = document.getElementById('imagePreview');
-    
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-    
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            }
-    
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-    </script>
-
 {% extends "admin/layout.html" %}
 {% block title %}Edit Question{% endblock %}
+
 {% block content %}
 <h2>Editer la Question {{ question.id }}</h2>
 <form method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
+
     <div>
         {{ form.question_statement.label }}
         {{ form.question_statement() }}
@@ -37,67 +21,56 @@
             </div>
         </div>
         {% endif %}
-
-        {% for field in [form.option1, form.option2, form.option3, form.option4, form.option5, form.correct_options] %}
-            <div>
-                {{ field.label }}
-                {{ field() }}
-                {% if field.errors %}
-                    <ul class="errors">
-                        {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-        {% endfor %}
     </div>
+
+    {% for field in [form.option1, form.option2, form.option3, form.option4, form.option5, form.correct_options] %}
+        <div>
+            {{ field.label }}
+            {{ field() }}
+            {% if field.errors %}
+                <ul class="errors">
+                    {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endfor %}
 
     <h3>Sous-questions</h3>
     <div id="sub-questions">
-        {% for sub_form in form.sub_questions %}
-            <div class="card mb-3 p-3 border">
-                {{ sub_form.question_statement.label }} {{ sub_form.question_statement }}
-                {{ sub_form.question_image.label }} {{ sub_form.question_image }}
-                {{ sub_form.option1.label }} {{ sub_form.option1 }}
-                {{ sub_form.option2.label }} {{ sub_form.option2 }}
-                {{ sub_form.option3.label }} {{ sub_form.option3 }}
-                {{ sub_form.option4.label }} {{ sub_form.option4 }}
-                {{ sub_form.option5.label }} {{ sub_form.option5 }}
-                {{ sub_form.correct_options.label }} {{ sub_form.correct_options }}
-            </div>
-        {% endfor %}
-    </div>
-
-    <div>
-        {{ form.submit() }}
-    </div>
-
-
-    <h3>Sous-questions</h3>
-    <div id="sub-questions">
-        {% for sub_form in form.sub_questions %}
+        {% for subform in form.sub_questions %}
+            {% set subform = subform %}
             {% include "admin/question/sub_question_block.html" %}
         {% endfor %}
     </div>
-
     <button type="button" id="add-sub-question" class="btn btn-secondary">Ajouter une sous-question</button>
 
-    <div id="empty-sub-question-template" style="display: none;">
-        {% include "admin/question/sub_question_block.html" with context %}
+    {% set subform = empty_sub_form %}
+    <template id="empty-sub-question-template">
+        {% include "admin/question/sub_question_block.html" %}
+    </template>
+
+    <div class="mt-4">
+        {{ form.submit() }}
     </div>
+</form>
 
-    <script>
-        document.getElementById("add-sub-question").addEventListener("click", function () {
-            const container = document.getElementById("sub-questions");
-            const index = container.children.length;
-            const template = document.getElementById("empty-sub-question-template").innerHTML;
+<script>
+    // Ajouter une sous-question dynamiquement
+    document.getElementById("add-sub-question").addEventListener("click", function () {
+        const container = document.getElementById("sub-questions");
+        const index = container.children.length;
+        const template = document.getElementById("empty-sub-question-template").innerHTML;
+        const tempDiv = document.createElement("div");
+        // Remplacer le placeholder __prefix__ par l'index
+        tempDiv.innerHTML = template.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
+        container.appendChild(tempDiv.firstElementChild);
+    });
 
-            // Création d’un élément temporaire pour modifier les "name" et "id"
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = template.replace(/sub_questions-\d+/g, `sub_questions-${index}`);
-            container.appendChild(tempDiv.firstElementChild);
-        });
-    </script>
-    </form>
+    // Suppression d'une sous-question
+    document.addEventListener("click", function (e) {
+        if (e.target && e.target.classList.contains("remove-sub-question")) {
+            e.target.closest(".sub-question-block").remove();
+        }
+    });
+</script>
 {% endblock %}
-
-    

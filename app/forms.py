@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField, SelectMultipleField, FieldList, FormField
+from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField, SelectMultipleField, FieldList, FormField, HiddenField
 from wtforms.validators import Email, Length, EqualTo, DataRequired, Optional
 from flask_wtf.file import FileField, FileAllowed
 
@@ -49,7 +49,6 @@ class SubQuestionForm(FlaskForm):
     class Meta:
         csrf = False #DÉSACTIVATION du CSRF pour les sous-formulaires
 
-
 class QuestionForm(FlaskForm):
     question_statement = TextAreaField('Question Statement', validators=[DataRequired()])
     question_image = FileField('Question Image', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Formats acceptés : jpg, jpeg, png, gif')])
@@ -61,5 +60,7 @@ class QuestionForm(FlaskForm):
     correct_options = TextAreaField('Correct Option (1-5)', validators=[DataRequired()])
     sub_questions = FieldList(FormField(SubQuestionForm), min_entries=0, label="Sous-Questions")
     submit = SubmitField('Valider')
+    total_sub_questions = HiddenField()
+
     
 

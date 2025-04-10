@@ -47,32 +47,64 @@
     <!-- Template caché pour duplication JS -->
     {% set subform = empty_sub_form %}
     <template id="empty-sub-question-template">
-        {% include 'admin/question/sub_question_block.html' with context %}
+        <div class="card mb-3 p-3 border sub-question-block">
+            <div>
+                <label for="sub_questions-__prefix__-question_statement">Énoncé</label>
+                <input type="text" name="sub_questions-__prefix__-question_statement" class="form-control" />
+            </div>
+            <div>
+                <label for="sub_questions-__prefix__-question_image">Image</label>
+                <input type="file" name="sub_questions-__prefix__-question_image" class="form-control" />
+            </div>
+            <div>
+                <label>Option 1</label>
+                <input type="text" name="sub_questions-__prefix__-option1" class="form-control" />
+            </div>
+            <div>
+                <label>Option 2</label>
+                <input type="text" name="sub_questions-__prefix__-option2" class="form-control" />
+            </div>
+            <div>
+                <label>Option 3</label>
+                <input type="text" name="sub_questions-__prefix__-option3" class="form-control" />
+            </div>
+            <div>
+                <label>Option 4</label>
+                <input type="text" name="sub_questions-__prefix__-option4" class="form-control" />
+            </div>
+            <div>
+                <label>Option 5</label>
+                <input type="text" name="sub_questions-__prefix__-option5" class="form-control" />
+            </div>
+            <div>
+                <label>Bonne(s) réponse(s)</label>
+                <input type="text" name="sub_questions-__prefix__-correct_options" class="form-control" />
+            </div>
+    
+            <button type="button" class="btn btn-danger btn-sm remove-sub-question mt-2">Supprimer cette sous-question</button>
+        </div>
     </template>
 
     <div>
         {{ form.submit }}
     </div>
+
+    {{ form.total_sub_questions }}
 </form>
 
 <script>
-    // Code pour ajouter une sous-question (déjà présent)
     document.getElementById("add-sub-question").addEventListener("click", function () {
-        const container = document.getElementById("sub-questions");
-        const template = document.getElementById("empty-sub-question-template").innerHTML;
-        const index = container.children.length;
+    const container = document.getElementById("sub-questions");
+    const template = document.getElementById("empty-sub-question-template").innerHTML;
+    const index = container.children.length;
 
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = template.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
-        container.appendChild(tempDiv.firstElementChild);
-    });
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = template.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
+    container.appendChild(tempDiv.firstElementChild);
 
-    // Supprimer dynamiquement une sous-question
-    document.addEventListener("click", function (e) {
-        if (e.target && e.target.classList.contains("remove-sub-question")) {
-            e.target.closest(".sub-question-block").remove();
-        }
-    });
+    // Met à jour le champ caché total_sub_questions
+    document.querySelector("input[name='form-total_sub_questions']").value = index + 1;
+});
 </script>
 
 
