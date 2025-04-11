@@ -12,7 +12,7 @@ class SubQuestion(db.Model):
     correct_options = db.Column(db.String, nullable=False)
 
     main_question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
-    question = db.relationship('Question')  # No backref
+    parent = db.relationship('Question', back_populates="sub_questions")  # No backref
 
     def get_options(self):
         options = [

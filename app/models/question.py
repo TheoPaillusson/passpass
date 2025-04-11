@@ -14,10 +14,9 @@ class Question(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=True)
     sub_questions = db.relationship(
-        'Question', 
-        backref=db.backref('parent', remote_side=[id]), 
-        cascade = "all, delete-orphan",
-        lazy='joined')
+        'SubQuestion', 
+        back_populates="parent", 
+        cascade = "all, delete-orphan")
 
     def get_options(self):
         options = [

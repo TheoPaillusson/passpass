@@ -202,20 +202,18 @@ def add_question(quiz_id):
                 sub_image.save(sub_image_path)
 
             # Enregistrement de chaque sous-question
-            sub_question = Question(
+            sub_question = SubQuestion(
                 question_statement=subform.form.question_statement.data,
-                image_filename=sub_filename,
+                question_image=sub_filename,
                 option1=subform.form.option1.data,
                 option2=subform.form.option2.data,
                 option3=subform.form.option3.data,
                 option4=subform.form.option4.data,
                 option5=subform.form.option5.data,
                 correct_options=','.join(subform.form.correct_options.data),
-                quiz_id=quiz_id,
-                parent_id=question.id  # Lien avec la question principale
+                parent=question  # Lien avec la question principale
             )
             db.session.add(sub_question)
-
         db.session.commit()
         flash('Question (et sous-questions) ajoutée(s) avec succès', category="success")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))

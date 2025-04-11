@@ -49,36 +49,36 @@
     <template id="empty-sub-question-template">
         <div class="card mb-3 p-3 border sub-question-block">
             <div>
-                <label for="sub_questions-__prefix__-question_statement">Énoncé</label>
-                <input type="text" name="sub_questions-__prefix__-question_statement" class="form-control" />
+                <label for="form-sub_questions-__prefix__-question_statement">Énoncé</label>
+                <input type="text" name="form-sub_questions-__prefix__-question_statement" class="form-control" />
             </div>
             <div>
-                <label for="sub_questions-__prefix__-question_image">Image</label>
-                <input type="file" name="sub_questions-__prefix__-question_image" class="form-control" />
+                <label for="form-sub_questions-__prefix__-question_image">Image</label>
+                <input type="file" name="form-sub_questions-__prefix__-question_image" class="form-control" />
             </div>
             <div>
                 <label>Option 1</label>
-                <input type="text" name="sub_questions-__prefix__-option1" class="form-control" />
+                <input type="text" name="form-sub_questions-__prefix__-option1" class="form-control" />
             </div>
             <div>
                 <label>Option 2</label>
-                <input type="text" name="sub_questions-__prefix__-option2" class="form-control" />
+                <input type="text" name="form-sub_questions-__prefix__-option2" class="form-control" />
             </div>
             <div>
                 <label>Option 3</label>
-                <input type="text" name="sub_questions-__prefix__-option3" class="form-control" />
+                <input type="text" name="form-sub_questions-__prefix__-option3" class="form-control" />
             </div>
             <div>
                 <label>Option 4</label>
-                <input type="text" name="sub_questions-__prefix__-option4" class="form-control" />
+                <input type="text" name="form-sub_questions-__prefix__-option4" class="form-control" />
             </div>
             <div>
                 <label>Option 5</label>
-                <input type="text" name="sub_questions-__prefix__-option5" class="form-control" />
+                <input type="text" name="form-sub_questions-__prefix__-option5" class="form-control" />
             </div>
             <div>
                 <label>Bonne(s) réponse(s)</label>
-                <input type="text" name="sub_questions-__prefix__-correct_options" class="form-control" />
+                <input type="text" name="form-sub_questions-__prefix__-correct_options" class="form-control" />
             </div>
     
             <button type="button" class="btn btn-danger btn-sm remove-sub-question mt-2">Supprimer cette sous-question</button>
@@ -99,7 +99,7 @@
     const index = container.children.length;
 
     const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = template.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
+    tempDiv.innerHTML = template.replace(/form-sub_questions-__prefix__/g, `form-sub_questions-${index}`);
     container.appendChild(tempDiv.firstElementChild);
 
     // Met à jour le champ caché total_sub_questions
