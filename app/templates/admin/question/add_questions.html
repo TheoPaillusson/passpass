@@ -94,18 +94,38 @@
 
 <script>
     document.getElementById("add-sub-question").addEventListener("click", function () {
-    const container = document.getElementById("sub-questions");
-    const template = document.getElementById("empty-sub-question-template").innerHTML;
-    const index = container.children.length;
+        const container = document.getElementById("sub-questions");
+        const template = document.getElementById("empty-sub-question-template").innerHTML;
+        const index = container.children.length;
 
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = template.replace(/form-sub_questions-__prefix__/g, `form-sub_questions-${index}`);
-    container.appendChild(tempDiv.firstElementChild);
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = template.replace(/form-sub_questions-__prefix__/g, `form-sub_questions-${index}`);
+        const newBlock = tempDiv.firstElementChild;
 
-    // Met à jour le champ caché total_sub_questions
-    document.querySelector("input[name='form-total_sub_questions']").value = index + 1;
-});
+        // Ajout du listener de suppression
+        newBlock.querySelector(".remove-sub-question").addEventListener("click", function () {
+            newBlock.remove();
+            updateTotalSubQuestions();
+        });
+
+        container.appendChild(newBlock);
+        updateTotalSubQuestions();
+    });
+
+    // Ajoute les listeners aux sous-questions existantes (celles rendues côté serveur)
+    document.querySelectorAll(".remove-sub-question").forEach(button => {
+        button.addEventListener("click", function () {
+            button.closest(".sub-question-block").remove();
+            updateTotalSubQuestions();
+        });
+    });
+
+    function updateTotalSubQuestions() {
+        const total = document.querySelectorAll(".sub-question-block").length;
+        document.querySelector("input[name='form-total_sub_questions']").value = total;
+    }
 </script>
+
 
 
 {% endblock %}

@@ -210,7 +210,7 @@ def add_question(quiz_id):
                 option3=subform.form.option3.data,
                 option4=subform.form.option4.data,
                 option5=subform.form.option5.data,
-                correct_options=','.join(subform.form.correct_options.data),
+                correct_options=subform.form.correct_options.data,
                 parent=question  # Lien avec la question principale
             )
             db.session.add(sub_question)
@@ -227,7 +227,6 @@ def add_question(quiz_id):
 @admin_login_required
 def edit_question(quiz_id, question_id):
     question = Question.query.get_or_404(question_id)
-    empty_sub_form = SubQuestionForm(prefix="sub_questions-__prefix__")  # Pour les ajouts dynamiques côté JS
 
     if question.parent_id:
         flash("Impossible d'éditer une sous-question directement.", "warning")
@@ -236,10 +235,26 @@ def edit_question(quiz_id, question_id):
     # Initialisation de form avant de manipuler quoi que ce soit
     form = QuestionForm(obj=question) if request.method == 'GET' else QuestionForm(formdata=CombinedMultiDict([request.form, request.files]), meta={'csrf': False})
 
+    # if request.method == 'GET':
+    #     for sub in question.sub_questions:
+    #         if sub.question_statement.strip():
+    #             print(question.sub_questions)
+    #             sub_form = SubQuestionForm(obj=sub, prefix=f"sub_questions-{len(form.sub_questions)}")
+    #             form.sub_questions.append_entry(sub_form)
+    #             print(form.sub_questions)
+
     if request.method == 'POST':
-        total = int(request.form.get('form-total_sub_questions', 0))
-        form.sub_questions.entries = []
-        form.sub_questions.min_entries = total
+        prefix_indexes = set()
+        for key in request.form:
+            if key.startswith("sub_questions-") and "-question_statement" in key:
+                try:
+                    index = int(key.split('-')[1])
+                    prefix_indexes.add(index)
+                except ValueError:
+                    continue
+
+        total = max(prefix_indexes) + 1 if prefix_indexes else 0        
+        form.total_sub_questions.data = len(form.sub_questions.entries)
 
     # 1. Mise à jour de la question principale
         question.question_statement = form.question_statement.data
@@ -265,15 +280,27 @@ def edit_question(quiz_id, question_id):
 
     # 3. Ajout des nouvelles sous-questions
         for i in range(total):
+            prefix = f'sub_questions-{i}-'
+            # On récupère tous les champs
+            statement = request.form.get(prefix + 'question_statement', '').strip()
+            options = [
+                request.form.get(prefix + 'option1', '').strip(),
+                request.form.get(prefix + 'option2', '').strip(),
+                request.form.get(prefix + 'option3', '').strip(),
+                request.form.get(prefix + 'option4', '').strip(),
+                request.form.get(prefix + 'option5', '').strip()
+            ]
+            correct = request.form.get(prefix + 'correct_options', '').strip()
+
             sub_question = SubQuestion(
-                question_statement=request.form.get(f'sub_questions-{i}-question_statement', ''),
-                option1=request.form.get(f'sub_questions-{i}-option1', ''),
-                option2=request.form.get(f'sub_questions-{i}-option2', ''),
-                option3=request.form.get(f'sub_questions-{i}-option3', ''),
-                option4=request.form.get(f'sub_questions-{i}-option4', ''),
-                option5=request.form.get(f'sub_questions-{i}-option5', ''),
-                correct_options=request.form.get(f'sub_questions-{i}-correct_options', ''),
-                parent=question  # Association directe à la question principale
+                question_statement=statement,
+                option1=options[0],
+                option2=options[1],
+                option3=options[2],
+                option4=options[3],
+                option5=options[4],
+                correct_options=correct,
+                parent=question
             )
             db.session.add(sub_question)
 
@@ -281,13 +308,8 @@ def edit_question(quiz_id, question_id):
 
         flash("Question mise à jour avec succès.", "success")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
-
-    return render_template(
-        'admin/question/edit_question.html',
-        form=form,
-        question=question,
-        empty_sub_form=empty_sub_form
-    )
+    
+    return render_template('admin/question/edit_question.html', form=form, question=question)
 
 
 @admin_bp.route("/admin/quiz/<int:quiz_id>/delete_question/<int:question_id>", methods=['POST'])

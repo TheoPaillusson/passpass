@@ -3,15 +3,19 @@
 
 {% block content %}
 <h2>Editer la Question {{ question.id }}</h2>
+
 <form method="POST" enctype="multipart/form-data">
+<h3>Question</h3>
+
     {{ form.hidden_tag() }}
 
     <div>
         {{ form.question_statement.label }}
         {{ form.question_statement() }}
+        <div>
         {{ form.question_image.label }}
         {{ form.question_image() }}
-
+        </div>  
         {% if question.image_filename %}
         <div class="mb-3">
             <label class="form-label">Image actuelle :</label>
@@ -34,19 +38,56 @@
             {% endif %}
         </div>
     {% endfor %}
-
+    
     <h3>Sous-questions</h3>
     <div id="sub-questions">
         {% for subform in form.sub_questions %}
-            {% set subform = subform %}
-            {% include "admin/question/sub_question_block.html" %}
-        {% endfor %}
+        {% if subform.question_statement.data != '' %}
+            <div class="sub-question-block">
+                {% include "admin/question/sub_question_block.html" %}
+            </div>
+        {% endif %}
+    {% endfor %}
     </div>
+    <input type="hidden" id="total_sub_questions" name = "total_sub_questions" value="{{ form.sub_questions|length }}">
     <button type="button" id="add-sub-question" class="btn btn-secondary">Ajouter une sous-question</button>
 
-    {% set subform = empty_sub_form %}
     <template id="empty-sub-question-template">
-        {% include "admin/question/sub_question_block.html" %}
+        <div class="sub-question-block">
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-question_statement">Énoncé de la sous-question :</label>
+                <textarea id="sub_questions-__prefix__-question_statement" name="sub_questions-__prefix__-question_statement" required></textarea>
+            </div>
+            <div class ="form-group">
+                <label for="sub-questions-__prefix__-question_image">Image de la sous-question :</label>
+                <input type="file" id="sub_questions-__prefix__-question_image" name="sub_questions-__prefix__-question_image">
+            </div>
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-option1">Option 1</label>
+                <input type="text" id="sub_questions-__prefix__-option1" name="sub_questions-__prefix__-option1">
+            </div>
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-option2">Option 2</label>
+                <input type="text" id="sub_questions-__prefix__-option2" name="sub_questions-__prefix__-option2">
+            </div>
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-option3">Option 3</label>
+                <input type="text" id="sub_questions-__prefix__-option3" name="sub_questions-__prefix__-option3">
+            </div>
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-option4">Option 4</label>
+                <input type="text" id="sub_questions-__prefix__-option4" name="sub_questions-__prefix__-option4">
+            </div>
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-option5">Option 5</label>
+                <input type="text" id="sub_questions-__prefix__-option5" name="sub_questions-__prefix__-option5">
+            </div>
+            <div class="form-group">
+                <label for="sub_questions-__prefix__-correct_options">Réponse correcte :</label>
+                <textarea id="sub_questions-__prefix__-correct_options" name="sub_questions-__prefix__-correct_options" required></textarea>
+            </div>
+            <button type="button" class="btn btn-danger remove-sub-question">Supprimer</button>
+        </div>
     </template>
 
     <div class="mt-4">
@@ -55,22 +96,59 @@
 </form>
 
 <script>
-    // Ajouter une sous-question dynamiquement
-    document.getElementById("add-sub-question").addEventListener("click", function () {
-        const container = document.getElementById("sub-questions");
-        const index = container.children.length;
-        const template = document.getElementById("empty-sub-question-template").innerHTML;
-        const tempDiv = document.createElement("div");
-        // Remplacer le placeholder __prefix__ par l'index
-        tempDiv.innerHTML = template.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
-        container.appendChild(tempDiv.firstElementChild);
-    });
-
-    // Suppression d'une sous-question
-    document.addEventListener("click", function (e) {
-        if (e.target && e.target.classList.contains("remove-sub-question")) {
-            e.target.closest(".sub-question-block").remove();
+    document.addEventListener("DOMContentLoaded", function () {
+        const addSubQuestionButton = document.getElementById("add-sub-question");
+    
+        if (!addSubQuestionButton) {
+            console.error("Le bouton 'Ajouter une sous-question' n'a pas été trouvé.");
+            return;
         }
+    
+        addSubQuestionButton.addEventListener("click", function () {
+            const container = document.getElementById("sub-questions");
+    
+            let validToAdd = true;
+            document.querySelectorAll("#sub-questions .sub-question-block").forEach(block => {
+                const questionStatement = block.querySelector('[name*=question_statement]').value.trim();
+                const correctOption = block.querySelector('[name*=correct_options]').value.trim();
+    
+                if (!questionStatement || !correctOption) {
+                    validToAdd = false;
+                }
+            });
+    
+            if (!validToAdd) {
+                alert("Veuillez remplir toutes les sous-questions existantes avant d'en ajouter de nouvelles.");
+                return;
+            }
+            
+            const totalInput = document.getElementById("total_sub_questions");
+            let index = parseInt(totalInput.value);
+            totalInput.value = index + 1;
+            const templateString = document.getElementById("empty-sub-question-template").innerHTML;
+    
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = templateString.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
+    
+            const newSubQuestionForm = tempDiv.firstElementChild;
+    
+            container.appendChild(newSubQuestionForm);
+            updateSubQuestionCount();
+        });
+    
+        document.addEventListener("click", function (e) {
+            if (e.target && e.target.classList.contains("remove-sub-question")) {
+                e.target.closest(".sub-question-block").remove();
+                updateSubQuestionCount();
+            }
+        });
+    
+        updateSubQuestionCount();
     });
-</script>
+    
+    function updateSubQuestionCount() {
+        document.getElementById("total_sub_questions").value = document.querySelectorAll("#sub-questions .sub-question-block").length;
+    }
+    </script>
+
 {% endblock %}
