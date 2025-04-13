@@ -164,13 +164,12 @@ def add_question(quiz_id):
     empty_sub_form = SubQuestionForm(prefix="sub_questions-__prefix__")
 
     if form.validate_on_submit():
-        print("form validé !")
         
         # Traitement de l'image pour la question principale
         image_file = form.question_image.data
         filename = None
         if image_file:
-            filename = secure_filename(image_file.filename)
+            filename = f"{uuid.uuid4().hex}_{secure_filename(image_file.filename)}"
             upload_path = os.path.join(current_app.root_path, 'static/uploads/questions', filename)
             os.makedirs(os.path.dirname(upload_path), exist_ok=True)
             image_file.save(upload_path)
@@ -195,8 +194,8 @@ def add_question(quiz_id):
             sub_image = subform.form.question_image.data
             sub_filename = None
 
-            if sub_image:
-                sub_filename = secure_filename(sub_image.filename)
+            if sub_image and sub_image.filename:
+                sub_filename = f"{uuid.uuid4().hex}_{secure_filename(sub_image.filename)}"
                 sub_image_path = os.path.join(current_app.root_path, 'static/uploads/questions', sub_filename)
                 os.makedirs(os.path.dirname(sub_image_path), exist_ok=True)
                 sub_image.save(sub_image_path)
@@ -214,6 +213,8 @@ def add_question(quiz_id):
                 parent=question  # Lien avec la question principale
             )
             db.session.add(sub_question)
+            print("Ajout DB — sous-question:", sub_question.question_statement, "| image:", sub_question.question_image)
+
         db.session.commit()
         flash('Question (et sous-questions) ajoutée(s) avec succès', category="success")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
@@ -222,6 +223,11 @@ def add_question(quiz_id):
         print('Form errors', form.errors)
     
     return render_template('admin/question/add_questions.html', form=form, quiz_id=quiz_id, empty_sub_form=empty_sub_form)
+
+
+
+
+from werkzeug.datastructures import CombinedMultiDict
 
 @admin_bp.route('/admin/question/edit/<int:quiz_id>/<int:question_id>', methods=['GET', 'POST'])
 @admin_login_required
@@ -232,31 +238,10 @@ def edit_question(quiz_id, question_id):
         flash("Impossible d'éditer une sous-question directement.", "warning")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
 
-    # Initialisation de form avant de manipuler quoi que ce soit
     form = QuestionForm(obj=question) if request.method == 'GET' else QuestionForm(formdata=CombinedMultiDict([request.form, request.files]), meta={'csrf': False})
 
-    # if request.method == 'GET':
-    #     for sub in question.sub_questions:
-    #         if sub.question_statement.strip():
-    #             print(question.sub_questions)
-    #             sub_form = SubQuestionForm(obj=sub, prefix=f"sub_questions-{len(form.sub_questions)}")
-    #             form.sub_questions.append_entry(sub_form)
-    #             print(form.sub_questions)
-
     if request.method == 'POST':
-        prefix_indexes = set()
-        for key in request.form:
-            if key.startswith("sub_questions-") and "-question_statement" in key:
-                try:
-                    index = int(key.split('-')[1])
-                    prefix_indexes.add(index)
-                except ValueError:
-                    continue
-
-        total = max(prefix_indexes) + 1 if prefix_indexes else 0        
-        form.total_sub_questions.data = len(form.sub_questions.entries)
-
-    # 1. Mise à jour de la question principale
+        # 1. Mise à jour de la question principale
         question.question_statement = form.question_statement.data
         question.option1 = form.option1.data
         question.option2 = form.option2.data
@@ -265,51 +250,177 @@ def edit_question(quiz_id, question_id):
         question.option5 = form.option5.data
         question.correct_options = form.correct_options.data
 
-    # Image : gestion facultative si modifiée
         image_file = request.files.get(form.question_image.name)
-        filename = None
         if image_file and image_file.filename:
-            filename = secure_filename(image_file.filename)
+            filename = f"{uuid.uuid4().hex}_{secure_filename(image_file.filename)}"
             image_path = os.path.join(current_app.root_path, 'static/uploads/questions', filename)
             image_file.save(image_path)
             question.image_filename = filename
 
-        # 2. Suppression des anciennes sous-questions
+        # 2. Mise à jour ou ajout des sous-questions
+        existing_sub_ids = {str(sub.id): sub for sub in question.sub_questions}
+        submitted_sub_ids = set()
+
+        for key in request.form:
+            if key.startswith("sub_questions-") and key.endswith("-question_statement"):
+                index = key.split("-")[1]
+                prefix = f"sub_questions-{index}"
+                sub_id = request.form.get(f"{prefix}-id")
+
+                submitted_sub_ids.add(sub_id)
+
+                statement = request.form.get(f"{prefix}-question_statement", '').strip()
+                options = [request.form.get(f"{prefix}-option{i+1}", '').strip() for i in range(5)]
+                correct = request.form.get(f"{prefix}-correct_options", '').strip()
+
+                # Cas 1 : sous-question existante à mettre à jour
+                if sub_id and sub_id in existing_sub_ids:
+                    sub_question = existing_sub_ids[sub_id]
+                    sub_question.question_statement = statement
+                    sub_question.option1 = options[0]
+                    sub_question.option2 = options[1]
+                    sub_question.option3 = options[2]
+                    sub_question.option4 = options[3]
+                    sub_question.option5 = options[4]
+                    sub_question.correct_options = correct
+                else:
+                    # Cas 2 : nouvelle sous-question
+                    sub_question = SubQuestion(
+                        question_statement=statement,
+                        option1=options[0],
+                        option2=options[1],
+                        option3=options[2],
+                        option4=options[3],
+                        option5=options[4],
+                        correct_options=correct,
+                        parent=question
+                    )
+                    db.session.add(sub_question)
+
+                # Gestion de l’image
+                sub_question_image = request.files.get(f'{prefix}-question_image')
+                existing_image = request.form.get(f'{prefix}-existing_image')
+
+                if sub_question_image:
+                    sub_filename = f"{uuid.uuid4().hex}_{secure_filename(sub_question_image.filename)}"
+                    sub_image_path = os.path.join(current_app.root_path, 'static/uploads/questions', sub_filename)
+                    sub_question_image.save(sub_image_path)
+                    sub_question.question_image  = sub_filename
+                    print(sub_question.question_image)
+                elif existing_image:
+                    sub_question.question_image  = existing_image
+                else:
+                    sub_question.question_image  = None
+
+        # 3. Supprimer les sous-questions supprimées par l'utilisateur
         for sub in question.sub_questions:
-            db.session.delete(sub)
+            if sub.id is not None and str(sub.id) not in submitted_sub_ids:
+                db.session.delete(sub)
 
-    # 3. Ajout des nouvelles sous-questions
-        for i in range(total):
-            prefix = f'sub_questions-{i}-'
-            # On récupère tous les champs
-            statement = request.form.get(prefix + 'question_statement', '').strip()
-            options = [
-                request.form.get(prefix + 'option1', '').strip(),
-                request.form.get(prefix + 'option2', '').strip(),
-                request.form.get(prefix + 'option3', '').strip(),
-                request.form.get(prefix + 'option4', '').strip(),
-                request.form.get(prefix + 'option5', '').strip()
-            ]
-            correct = request.form.get(prefix + 'correct_options', '').strip()
-
-            sub_question = SubQuestion(
-                question_statement=statement,
-                option1=options[0],
-                option2=options[1],
-                option3=options[2],
-                option4=options[3],
-                option5=options[4],
-                correct_options=correct,
-                parent=question
-            )
-            db.session.add(sub_question)
-
-        db.session.commit()  # 🔥 Ne pas oublier ça !
+        db.session.commit()
 
         flash("Question mise à jour avec succès.", "success")
         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+
+    return render_template('admin/question/edit_question.html', form=form, question=question, zip=zip)
+
+
+
+# @admin_bp.route('/admin/question/edit/<int:quiz_id>/<int:question_id>', methods=['GET', 'POST'])
+# @admin_login_required
+# def edit_question(quiz_id, question_id):
+#     question = Question.query.get_or_404(question_id)
+
+#     if question.parent_id:
+#         flash("Impossible d'éditer une sous-question directement.", "warning")
+#         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
+
+#     # Initialisation de form avant de manipuler quoi que ce soit
+#     form = QuestionForm(obj=question) if request.method == 'GET' else QuestionForm(formdata=CombinedMultiDict([request.form, request.files]), meta={'csrf': False})
+
+#     if request.method == 'POST':
+#         prefix_indexes = set()
+#         for key in request.form:
+#             if key.startswith("sub_questions-") and "-question_statement" in key:
+#                 try:
+#                     index = int(key.split('-')[1])
+#                     prefix_indexes.add(index)
+#                 except ValueError:
+#                     continue
+
+#         total = max(prefix_indexes) + 1 if prefix_indexes else 0        
+#         form.total_sub_questions.data = len(form.sub_questions.entries)
+
+#     # 1. Mise à jour de la question principale
+#         question.question_statement = form.question_statement.data
+#         question.option1 = form.option1.data
+#         question.option2 = form.option2.data
+#         question.option3 = form.option3.data
+#         question.option4 = form.option4.data
+#         question.option5 = form.option5.data
+#         question.correct_options = form.correct_options.data
+
+#     # Image : gestion facultative si modifiée
+#         image_file = request.files.get(form.question_image.name)
+#         filename = None
+#         if image_file and image_file.filename:
+#             filename = f"{uuid.uuid4().hex}_{secure_filename(image_file.filename)}"
+#             image_path = os.path.join(current_app.root_path, 'static/uploads/questions', filename)
+#             image_file.save(image_path)
+#             question.image_filename = filename
+
+#         # 2. Suppression des anciennes sous-questions
+#         for sub in question.sub_questions:
+#             db.session.delete(sub)
+
+#     # 3. Ajout des nouvelles sous-questions
+#         for i in range(total):
+#             prefix = f'sub_questions-{i}'
+#             statement = request.form.get(f'{prefix}-question_statement', '').strip()
+#             options = [
+#                 request.form.get(f'{prefix}-option1', '').strip(),
+#                 request.form.get(f'{prefix}-option2', '').strip(),
+#                 request.form.get(f'{prefix}-option3', '').strip(),
+#                 request.form.get(f'{prefix}-option4', '').strip(),
+#                 request.form.get(f'{prefix}-option5', '').strip()
+#             ]
+#             correct = request.form.get(f'{prefix}-correct_options', '').strip()
+
+#             sub_question = SubQuestion(
+#                 question_statement=statement,
+#                 option1=options[0],
+#                 option2=options[1],
+#                 option3=options[2],
+#                 option4=options[3],
+#                 option5=options[4],
+#                 correct_options=correct,
+#                 parent=question
+#             )
+
+#             print("Request Files: ", request.files)  # Log pour vérifier la présence des fichiers
+
+#             sub_question_image = request.files.get(f'{prefix}-question_image') or request.files.get(f'sub_questions-{prefix}-question_image')
+#             print(f"sub_question_image: {sub_question_image}")  # Log pour vérifier la récupération de l'image
+            
+#             if sub_question_image and sub_question_image.filename:
+#                 sub_filename = f"{uuid.uuid4().hex}_{secure_filename(sub_question_image.filename)}"
+#                 sub_image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'questions', sub_filename)
+#                 sub_question_image.save(sub_image_path)
+#                 sub_question.image_filename = os.path.join('uploads', 'questions', sub_filename)  # 🔥 Le champ devrait bien s'enregistrer maintenant
+#                 print(f"Image saved for sub-question {i}: {sub_filename}")  # Log pour vérifier la sauvegarde
+#             else:
+#                 print(f"No image for sub-question {i}")
+            
+#             print(f"Sub-question {i} before commit : {sub_question}")
+
+#             db.session.add(sub_question)
+
+#         print(f"Session state before commit: {db.session.new}")
+#         db.session.commit()  # 🔥 Ne pas oublier ça !
+#         flash("Question mise à jour avec succès.", "success")
+#         return redirect(url_for('admin.manage_questions', quiz_id=quiz_id))
     
-    return render_template('admin/question/edit_question.html', form=form, question=question)
+#     return render_template('admin/question/edit_question.html', form=form, question=question, zip=zip)
 
 
 @admin_bp.route("/admin/quiz/<int:quiz_id>/delete_question/<int:question_id>", methods=['POST'])

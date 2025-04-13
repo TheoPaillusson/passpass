@@ -39,6 +39,7 @@ class QuizForm(FlaskForm):
 class SubQuestionForm(FlaskForm):
     question_statement = StringField('Énoncé de la sous-question', validators=[DataRequired()])
     question_image = FileField('Image', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images seulement')])
+    image_filename = HiddenField() # pour afficher l'image de la sous question
     option1 = StringField('Option 1', validators=[DataRequired()])
     option2 = StringField('Option 2', validators=[DataRequired()])
     option3 = StringField('Option 3')

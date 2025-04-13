@@ -8,12 +8,13 @@ _______________SUCCESS PODIUM_______________
 - les none apparaissent lorsque la question a moins de 5 réponses
 - helper question
 - add question qui undefined error 
-
-_______________Questions REFACTORING_______________
-
 - sous-questions
     -> finir l'implémentation des sous-questions
     -> l'affichage pour des sous-questions dans attempt quiz
+
+
+_______________Questions REFACTORING_______________
+
 
 - pouvoir décoréller les questions des quiz
 

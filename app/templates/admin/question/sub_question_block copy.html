@@ -1,4 +1,3 @@
-{% for subform, sub in zip(form.sub_questions, question.sub_questions) %}
 <div class="card mb-3 p-3 border sub-question-block">
     <div>
         {{ subform.question_statement.label }} 
@@ -8,19 +7,17 @@
     <div>
         {{ subform.question_image.label }} 
         {{ subform.question_image }}
+        <img src="{{ url_for('static', filename='uploads/questions/' + question.sub_questions[0].question_image) }}">
 
-        {% if sub.question_image %}
+        {% if subform.image_filename.data %}
         <div class="mb-3">
             <label class="form-label">Image actuelle :</label>
             <div class="question-image-wrapper">
-                <img src="{{ url_for('static', filename='uploads/questions/' + sub.question_image)}}"
-                     alt="Image actuelle de la sous-question"
-                     class="img-fluid rounded shadow" >
+                <img src="{{ url_for('static', filename='uploads/questions/' + subform.image_filename) }}"
+                     alt="Image actuelle de la sous-question" class="img-fluid rounded shadow">
             </div>
         </div>
-        <!-- Hidden input to retain the existing image filename -->
-        <input type="hidden" name="sub_questions-{{ loop.index0 }}-existing_image" value="{{ sub.question_image }}">
-        {% endif %}
+    {% endif %}
     </div>
 
     <div>
@@ -44,4 +41,3 @@
 
     <button type="button" class="btn btn-danger btn-sm remove-sub-question mt-2">Supprimer cette sous-question</button>
 </div>
-{% endfor %}

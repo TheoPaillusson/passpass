@@ -15,6 +15,7 @@
         <div>
         {{ form.question_image.label }}
         {{ form.question_image() }}
+
         </div>  
         {% if question.image_filename %}
         <div class="mb-3">
@@ -41,13 +42,13 @@
     
     <h3>Sous-questions</h3>
     <div id="sub-questions">
-        {% for subform in form.sub_questions %}
-        {% if subform.question_statement.data != '' %}
-            <div class="sub-question-block">
-                {% include "admin/question/sub_question_block.html" %}
-            </div>
+        {% if form.sub_questions %}
+            {% for subform in form.sub_questions %}
+                <div class="sub-question-block">
+                    {% include "admin/question/sub_question_block.html" %}
+                </div>
+            {% endfor %}
         {% endif %}
-    {% endfor %}
     </div>
     <input type="hidden" id="total_sub_questions" name = "total_sub_questions" value="{{ form.sub_questions|length }}">
     <button type="button" id="add-sub-question" class="btn btn-secondary">Ajouter une sous-question</button>
@@ -59,6 +60,9 @@
                 <textarea id="sub_questions-__prefix__-question_statement" name="sub_questions-__prefix__-question_statement" required></textarea>
             </div>
             <div class ="form-group">
+                <input type="hidden" name="sub_questions-__prefix__-id" value="">
+                <input type="hidden" name="sub_questions-__prefix__-existing_image" value="">
+                
                 <label for="sub-questions-__prefix__-question_image">Image de la sous-question :</label>
                 <input type="file" id="sub_questions-__prefix__-question_image" name="sub_questions-__prefix__-question_image">
             </div>
