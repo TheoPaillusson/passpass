@@ -10,11 +10,12 @@ _______________SUCCESS PODIUM_______________
 - add question qui undefined error 
 - sous-questions
     -> finir l'implémentation des sous-questions
-    -> l'affichage pour des sous-questions dans attempt quiz
+    -> image pour les sous questions
 
 
 _______________Questions REFACTORING_______________
 
+- l'affichage pour des sous-questions dans attempt quiz
 
 - pouvoir décoréller les questions des quiz
 
