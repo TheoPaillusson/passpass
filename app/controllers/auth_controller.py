@@ -29,10 +29,16 @@ def register():
                     dob = form.dob.data
         )
         user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Création de compte réussie !', category="success")
-        return redirect(url_for('auth.login'))
+
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('Création de compte réussie !', category="success")
+            return redirect(url_for('auth.login'))
+        except:
+            flash('Email déjà renseigné', category="error")
+            return redirect(url_for('auth.register'))
+
     return render_template("register.html", form=form)
 
 @auth_bp.route("/login", methods=['GET', 'POST'])

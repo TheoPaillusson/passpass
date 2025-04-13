@@ -13,9 +13,14 @@ _______________SUCCESS PODIUM_______________
     -> image pour les sous questions
 - l'affichage pour des sous-questions dans attempt quiz
 - les scores apparaissent deux fois en haut a gauche et au milieu. celui du milieu est faux (dernier score de l'user au test)
+- synthaxe Latex pour les question statement (dans add question)
+
 
 
 _______________Questions REFACTORING_______________
+
+- petite image dégueu dans le user attempt quiz pour les questions 
+- synthaxe Latex pour les question statement (dans edit question)
 
 
 - pouvoir décoréller les questions des quiz
@@ -24,18 +29,11 @@ _______________Questions REFACTORING_______________
 
 - voir le recap du quiz : les questions auxquelles j'ai eu bon et celles ou j'ai eu faux 
 
-- synthaxe Latex dans les questions pour les éléments mathématiques
-
-
-- lorsqu'un user refait des questions aux quelles il a déjà répondu juste, 
-il obtient de nouveaux points dans le ranking
-
 - pouvoir choisir le nombre de questions auxquelles répondre 
 
 - pouvoir choisir "questions auxquelles j'ai déjà répondu" 
 - questions auxquelles je n'ai pas répondu 
 - questions auxquelles j'ai eu faux ou j'ai eu bon 
-
 
 - importer une correction
 
@@ -48,11 +46,13 @@ _______________Quiz REFACTORING_______________
 _______________Base de données_______________
 
 - migration possible de la base de données sans avoir à la détruire
-- plusieurs usernames avec le même ID 
 
+- message d'erreur lorsque même user id 
 
+- PAGE : TESTEZ MOI 
+    - permet au user de 
 
+_______________vie du site_______________
 
-vie du site : 
 
 - Problème du jour 
