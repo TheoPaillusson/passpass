@@ -9,7 +9,11 @@
 
     <div>
         {{ form.question_statement.label }} 
-        {{ form.question_statement }}
+        {{ form.question_statement(id="question_statement", class="form-control") }}
+    </div>
+    <div class="mt-2 p-3 border rounded bg-light">
+        <strong>Aperçu LaTeX :</strong>
+        <div id="latex-preview" class="mt-2 text-dark"></div>
     </div>
     <div>
         {{ form.question_image.label }}
@@ -128,5 +132,37 @@
 </script>
 
 
+
+
+
+
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+            fontCache: 'global'
+        }
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@wiris/mathtype-ckeditor5@latest/dist/mathtype-ckeditor5.min.js"></script>
+
+<script>
+    const textarea = document.getElementById("question_statement");
+    const preview = document.getElementById("latex-preview");
+
+    function updatePreview() {
+        preview.innerText = textarea.value;
+        MathJax.typesetPromise([preview]);
+    }
+
+    textarea.addEventListener("input", updatePreview);
+
+    // Premier rendu si pré-rempli
+    updatePreview();
+</script>
 
 {% endblock %}

@@ -38,10 +38,9 @@
             {% else %}
                 <strong>Question :</strong>
             {% endif %}
-            {{ question.question_statement }}
+            {{ question.question_statement | safe }}
             <div class="mb-3">
                 <img src="{{ url_for('static', filename='uploads/questions/' + question.question_image|replace('\\', '/') ) }}"
-                     alt="Image de la question"
                      style="max-width: 100%; max-height: 300px;">
             </div>
         </h5>
@@ -107,5 +106,17 @@
         const timeInterval = setInterval(updateTimer, 1000);
     }
 </script>
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        svg: {
+            fontCache: 'global'
+        }
+    };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 
 {% endblock %}
