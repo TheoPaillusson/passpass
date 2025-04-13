@@ -38,7 +38,6 @@ def attempt_quiz(quiz_id):
         full_questions.append(q)
         full_questions.extend(q.sub_questions)
 
-
     if request.method == 'POST':
         score = 0
         for question in full_questions:
@@ -48,23 +47,37 @@ def attempt_quiz(quiz_id):
             if set(selected_answers) == correct_answers:
                 score+= 1
 
-        user_score = Score(
-            total_scored = score,
-            quiz_id = quiz_id,
-            user_id = current_user.id,  
-        )
-        db.session.add(user_score)
-        db.session.commit()
+        existing_score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
+            
+        # Mise à jour du score existant
+        if existing_score:
+            existing_score.total_scored = score
+            db.session.commit()
+        else:
+            user_score = Score(
+                total_scored = score,
+                quiz_id = quiz_id,
+                user_id = current_user.id,  
+            )
+            db.session.add(user_score)
+            db.session.commit()
         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
-        return redirect(url_for("users.quiz_results", quiz_id=quiz_id))
-    return render_template("user/attempt_quiz.html", quiz=quiz, questions=full_questions)
+        return redirect(url_for("users.quiz_results", 
+                                quiz_id=quiz_id, 
+                                scored=score, 
+                                total=len(full_questions)))
+    
+    test = request.args.get("test")
+    return render_template("user/attempt_quiz.html", quiz=quiz, questions=full_questions, test=test)
 
 @users_bp.route('/quiz_results/<int:quiz_id>', )
 @login_required
 def quiz_results(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
-    return render_template("user/quiz_results.html", quiz=quiz, score=score)
+    len_quiz = sum(1 + len(q.sub_questions) for q in quiz.questions)
+     
+    return render_template("user/quiz_results.html", quiz=quiz, score=score, len_quiz=len_quiz)
 
 @users_bp.route('/leaderboard')
 @login_required

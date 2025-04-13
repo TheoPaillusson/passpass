@@ -11,11 +11,12 @@ _______________SUCCESS PODIUM_______________
 - sous-questions
     -> finir l'implémentation des sous-questions
     -> image pour les sous questions
+- l'affichage pour des sous-questions dans attempt quiz
+- les scores apparaissent deux fois en haut a gauche et au milieu. celui du milieu est faux (dernier score de l'user au test)
 
 
 _______________Questions REFACTORING_______________
 
-- l'affichage pour des sous-questions dans attempt quiz
 
 - pouvoir décoréller les questions des quiz
 
@@ -25,7 +26,6 @@ _______________Questions REFACTORING_______________
 
 - synthaxe Latex dans les questions pour les éléments mathématiques
 
-- les scores apparaissent deux fois en haut a gauche et au milieu. celui du milieu est faux (dernier score de l'user au test)
 
 - lorsqu'un user refait des questions aux quelles il a déjà répondu juste, 
 il obtient de nouveaux points dans le ranking
