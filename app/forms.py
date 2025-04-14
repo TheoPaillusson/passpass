@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, DateField, SubmitField, TextAreaField, SelectField, IntegerField, DateTimeLocalField, SelectMultipleField, FieldList, FormField, HiddenField
-from wtforms.validators import Email, Length, EqualTo, DataRequired, Optional
+from wtforms.validators import Email, Length, EqualTo, DataRequired, Optional, NumberRange
 from flask_wtf.file import FileField, FileAllowed
 
 
@@ -63,5 +63,9 @@ class QuestionForm(FlaskForm):
     submit = SubmitField('Valider')
     total_sub_questions = HiddenField()
 
-    
+class TestMeForm(FlaskForm):
+    subject = SelectField("Matière", coerce=int, validators=[DataRequired()])
+    chapters = SelectMultipleField("Chapitres", coerce=int, validators=[DataRequired()])
+    number_of_questions = IntegerField("Nombre de questions", validators=[DataRequired(), NumberRange(min=1)])
+    submit = SubmitField("Lancer le test")    
 

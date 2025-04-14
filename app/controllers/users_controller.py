@@ -1,14 +1,16 @@
 from flask import Blueprint
-
 from app import  db
 from flask import render_template, redirect, flash, url_for, request
 from app.models.chapter import Chapter
+from app.models.question import Question
 from app.models.quiz import Quiz
 from app.models.score import Score
 from app.models.subject import Subject
 from app.models.user import User
 from flask_login import  login_required, current_user
-from random import shuffle
+from random import shuffle, random
+from app.forms import TestMeForm
+
 
 users_bp = Blueprint('users', __name__)
 
@@ -118,3 +120,32 @@ def select_quiz():
                            subjects=subjects,
                            chapters=chapters,
                            quizzes=quizzes)
+
+
+@users_bp.route("/test_me", methods=["GET", "POST"])
+@login_required
+def test_me():
+    subjects = Subject.query.order_by(Subject.name).all()
+    selected_subject_id = request.form.get("subject_id", type=int)
+    selected_chapter_ids = request.form.getlist("chapter_ids", type=int)
+    number = request.form.get("number_of_questions", type=int)
+
+    chapters = []
+    selected_questions = []
+
+    if selected_subject_id:
+        chapters = Chapter.query.filter_by(subject_id=selected_subject_id).order_by(Chapter.name).all()
+
+    if request.method == "POST" and selected_chapter_ids and number:
+        quizzes = Quiz.query.filter(Quiz.chapter_id.in_(selected_chapter_ids)).all()
+        quiz_ids = [quiz.id for quiz in quizzes]
+        all_questions = Question.query.filter(Question.quiz_id.in_(quiz_ids)).all()
+        selected_questions = random.sample(all_questions, min(len(all_questions), number))
+        return render_template("user/test_me_results.html", questions=selected_questions)
+
+    return render_template("user/test_me.html",
+                           subjects=subjects,
+                           chapters=chapters,
+                           selected_subject_id=selected_subject_id,
+                           selected_chapter_ids=selected_chapter_ids,
+                           number=number)

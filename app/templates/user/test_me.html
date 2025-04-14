@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block title %}Test personnalisé{% endblock %}
+
+{% block content %}
+<h2>Créer un test personnalisé</h2>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="subject_id">Matière</label>
+        <select name="subject_id" id="subject_id" class="form-control" onchange="this.form.submit()">
+            <option value="">-- Choisir une matière --</option>
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}" {% if subject.id == selected_subject_id %}selected{% endif %}>{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Chapitres</label><br>
+    
+        <!-- Case "Tous les chapitres" -->
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="select_all_chapters">
+            <label class="form-check-label" for="select_all_chapters">
+                Tous les chapitres
+            </label>
+        </div>
+    
+        <!-- Liste des chapitres -->
+        {% for chapter in chapters %}
+            <div class="form-check">
+                <input class="form-check-input chapter-checkbox"
+                       type="checkbox"
+                       name="chapter_ids"
+                       value="{{ chapter.id }}"
+                       id="chapter_{{ chapter.id }}"
+                       {% if chapter.id in selected_chapter_ids %}checked{% endif %}>
+                <label class="form-check-label" for="chapter_{{ chapter.id }}">
+                    {{ chapter.name }}
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        <label for="number_of_questions">Nombre de questions</label>
+        <input type="number" name="number_of_questions" id="number_of_questions" class="form-control" value="{{ number or '' }}">
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Lancer le test</button>
+    </div>
+</form>
+
+<script>
+    const selectAllCheckbox = document.getElementById('select_all_chapters');
+    const chapterCheckboxes = document.querySelectorAll('.chapter-checkbox');
+
+    selectAllCheckbox.addEventListener('change', function () {
+        chapterCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Optionnel : synchroniser la case "Tous les chapitres" si l'utilisateur décoche un seul chapitre
+    chapterCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const allChecked = Array.from(chapterCheckboxes).every(c => c.checked);
+            selectAllCheckbox.checked = allChecked;
+        });
+    });
+</script>
+{% endblock %}
+

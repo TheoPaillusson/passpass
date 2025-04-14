@@ -62,12 +62,12 @@
   {% endif %}
   {% endwith %} 
     <ul>
-      <li><a href="{{ url_for('home')}}">Home</a></li>
-      <li><a href="{{ url_for('auth.register')}}">Register</a></li>
+      <li><a href="{{ url_for('home')}}">Accueil</a></li>
+      <li><a href="{{ url_for('auth.register')}}">Créer un compte</a></li>
       {% if current_user.is_authenticated %}
-      <li><a href="{{ url_for('auth.logout')}}">Logout</a></li>
+      <li><a href="{{ url_for('auth.logout')}}">Se déconnecter</a></li>
       {% else %}
-      <li><a href="{{ url_for('auth.login')}}">Login</a></li>
+      <li><a href="{{ url_for('auth.login')}}">Se connecter</a></li>
       {% endif %}
     </ul>
     <div id="content">
@@ -80,7 +80,9 @@
           <ul>
              <li><a href="{{ url_for('users.dashboard')}}">Dashboard</a></li>
              <li><a href="{{ url_for('users.leaderboard')}}">Leaderboard</a></li>
-             <li><a href="{{ url_for('users.select_quiz')}}">Select Quiz</a></li>
+             <li><a href="{{ url_for('users.select_quiz')}}">Chercher un Quiz</a></li>
+             <li><a href="{{ url_for('users.test_me')}}">Se tester</a></li>
+
           </ul>
           {% endif %}
         </div>
