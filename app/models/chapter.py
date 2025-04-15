@@ -6,4 +6,4 @@ class Chapter(db.Model):
     description = db.Column(db.Text)
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
 
-    quizzes = db.relationship('Quiz', backref='chapter', lazy=True)    
+    quizzes = db.relationship('Quiz', backref='chapter', lazy=True, cascade="all, delete-orphan")    

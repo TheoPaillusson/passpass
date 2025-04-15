@@ -10,6 +10,7 @@ class QuestionAttempt(db.Model):
 
     user = db.relationship('User', back_populates='question_attempts')
     question = db.relationship('Question', back_populates='question_attempts')    
+    
     __table_args__ = (
         db.UniqueConstraint('user_id', 'question_id', name='unique_user_question'),
     )

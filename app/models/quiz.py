@@ -7,5 +7,5 @@ class Quiz(db.Model):
     time_duration = db.Column(db.Integer, default=0)
     remarks = db.Column(db.Integer)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
-    questions = db.relationship('Question', backref='Quiz', lazy=True)
-    scores = db.relationship('Score', backref="quiz", lazy=True)
+    questions = db.relationship('Question', backref='Quiz', lazy=True, cascade="all, delete-orphan")
+    scores = db.relationship('Score', backref="quiz", lazy=True, cascade="all, delete-orphan")

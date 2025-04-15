@@ -6,4 +6,4 @@ class Subject(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
 
-    chapters = db.relationship('Chapter', backref='Subject', lazy=True)
+    chapters = db.relationship('Chapter', backref='Subject', lazy=True, cascade="all, delete-orphan")
