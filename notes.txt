@@ -14,7 +14,8 @@ _______________SUCCESS PODIUM_______________
 - l'affichage pour des sous-questions dans attempt quiz
 - les scores apparaissent deux fois en haut a gauche et au milieu. celui du milieu est faux (dernier score de l'user au test)
 - synthaxe Latex pour les question statement (dans add question)
-
+- REGISTER : message d'erreur lorsque même user id 
+- pouvoir décoréller les questions des quiz
 
 
 _______________Questions REFACTORING_______________
@@ -22,8 +23,10 @@ _______________Questions REFACTORING_______________
 - petite image dégueu dans le user attempt quiz pour les questions 
 - synthaxe Latex pour les question statement (dans edit question)
 
+[UNIQUEMENT APRES PAGE CORRECTION]
+- report issue pour l'utilisateur qui rencontre un probleme avec sa question 
+    - possibilité d'écrire un message 
 
-- pouvoir décoréller les questions des quiz
 
 - ux login champs pas de la même taille
 
@@ -47,7 +50,6 @@ _______________Base de données_______________
 
 - migration possible de la base de données sans avoir à la détruire
 
-- message d'erreur lorsque même user id 
 
 - PAGE : TESTEZ MOI 
     - permet au user de 

@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Résultat du test{% endblock %}
+
+{% block content %}
+<h2>Résultat du test personnalisé</h2>
+
+<div class="alert alert-info">
+    <strong>Score :</strong> {{ scored }} / {{ total }}
+</div>
+
+<a class="btn btn-primary" href="{{ url_for('users.test_me') }}">Se tester à nouveau</a>
+{% endblock %}

@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, session
 from app import  db
 from flask import render_template, redirect, flash, url_for, request
 from app.models.chapter import Chapter
@@ -8,7 +8,7 @@ from app.models.score import Score
 from app.models.subject import Subject
 from app.models.user import User
 from flask_login import  login_required, current_user
-from random import shuffle, random
+import random
 from app.forms import TestMeForm
 
 
@@ -141,7 +141,10 @@ def test_me():
         quiz_ids = [quiz.id for quiz in quizzes]
         all_questions = Question.query.filter(Question.quiz_id.in_(quiz_ids)).all()
         selected_questions = random.sample(all_questions, min(len(all_questions), number))
-        return render_template("user/test_me_results.html", questions=selected_questions)
+
+        # Stocker les IDs des questions dans la session
+        session["test_question_ids"] = [q.id for q in selected_questions]
+        return redirect(url_for("users.attempt_test"))
 
     return render_template("user/test_me.html",
                            subjects=subjects,
@@ -149,3 +152,48 @@ def test_me():
                            selected_subject_id=selected_subject_id,
                            selected_chapter_ids=selected_chapter_ids,
                            number=number)
+
+@users_bp.route('/attempt_test', methods=['GET', 'POST'])
+@login_required
+def attempt_test():
+    question_ids = session.get("test_question_ids", [])
+    if not question_ids:
+        flash("Aucune question sélectionnée pour ce test.", "warning")
+        return redirect(url_for("users.test_me"))
+
+    questions = Question.query.filter(Question.id.in_(question_ids)).all()
+
+    # Ajouter les sous-questions
+    full_questions = []
+    for q in questions:
+        full_questions.append(q)
+        full_questions.extend(q.sub_questions)
+
+    if request.method == 'POST':
+        score = 0
+        for question in full_questions:
+            selected_answers = request.form.getlist(f'question_{question.id}')
+            correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
+
+            if set(selected_answers) == correct_answers:
+                score += 1
+
+        flash(f'Votre score : {score}/{len(full_questions)}', category="success")
+        session.pop("test_question_ids", None)  # Nettoyage session
+        return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
+
+    return render_template("user/attempt_test.html", questions=full_questions)
+
+@users_bp.route('/test_results')
+@login_required
+def test_results():
+    scored = request.args.get("scored", type=int)
+    total = request.args.get("total", type=int)
+
+    if scored is None or total is None:
+        flash("Résultat du test introuvable.", "warning")
+        return redirect(url_for("users.test_me"))
+
+    return render_template("user/test_results.html", scored=scored, total=total)
+
+

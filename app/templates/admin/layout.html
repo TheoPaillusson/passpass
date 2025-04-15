@@ -72,6 +72,7 @@
       <div class="sidebar">
         {% block sidebar %}
         <ul>
+          <li><a href="{{url_for('home')}}">Accueil</a></li>
           <li><a href="{{url_for('admin.admin_dashboard')}}">Admin Dashboard</a></li>
           <li><a href="{{url_for('admin.manage_subjects')}}">Manage Subjects</a></li>
           <li><a href="{{url_for('admin.manage_chapters')}}">Manage Chapters</a></li>
