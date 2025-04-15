@@ -46,7 +46,17 @@
         <label for="number_of_questions">Nombre de questions</label>
         <input type="number" name="number_of_questions" id="number_of_questions" class="form-control" value="{{ number or '' }}">
     </div>
-
+    
+    <div class="mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="only_unanswered_or_wrong" id="only_unanswered_or_wrong"
+            {% if only_unanswered_or_wrong %}checked{% endif %}>
+            <label class="form-check-label" for="only_unanswered_or_wrong">
+                Inclure uniquement les questions jamais réussies
+            </label>
+        </div>
+    </div>
+    
     <div>
         <button type="submit" class="btn btn-primary">Lancer le test</button>
     </div>

@@ -1,12 +1,13 @@
 from app import create_app, db, login_manager
 from flask import render_template, redirect, flash, url_for, request
-from app.models.chapter import Chapter
 from app import db
+from app.models.chapter import Chapter
 from app.models.question import Question
 from app.models.quiz import Quiz
 from app.models.score import Score
 from app.models.subject import Subject
 from app.models.user import User
+from app.models.questionattempt import QuestionAttempt
 from app.forms import RegisterForm, LoginForm, SubjectForm, ChapterForm, QuizForm, QuestionForm
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv

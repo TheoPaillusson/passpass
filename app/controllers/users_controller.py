@@ -7,6 +7,7 @@ from app.models.quiz import Quiz
 from app.models.score import Score
 from app.models.subject import Subject
 from app.models.user import User
+from app.models.questionattempt import QuestionAttempt
 from flask_login import  login_required, current_user
 import random
 from app.forms import TestMeForm
@@ -29,6 +30,7 @@ def dashboard():
                            total_attempted_quizzes=total_attempted_quizzes, 
                            average_score=average_score)
 
+
 @users_bp.route('/attempt_quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def attempt_quiz(quiz_id):
@@ -45,32 +47,79 @@ def attempt_quiz(quiz_id):
         for question in full_questions:
             selected_answers = request.form.getlist(f'question_{question.id}')
             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
-            
-            if set(selected_answers) == correct_answers:
-                score+= 1
+
+            is_correct = set(selected_answers) == correct_answers
+            if is_correct:
+                score += 1
+
+            # Enregistrer ou mettre à jour la tentative
+            attempt = QuestionAttempt.query.filter_by(user_id=current_user.id, question_id=question.id).first()
+            if attempt:
+                attempt.is_correct = is_correct
+            else:
+                attempt = QuestionAttempt(user_id=current_user.id, question_id=question.id, is_correct=is_correct)
+                db.session.add(attempt)
 
         existing_score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
-            
-        # Mise à jour du score existant
         if existing_score:
             existing_score.total_scored = score
-            db.session.commit()
         else:
             user_score = Score(
-                total_scored = score,
-                quiz_id = quiz_id,
-                user_id = current_user.id,  
+                total_scored=score,
+                quiz_id=quiz_id,
+                user_id=current_user.id,
             )
             db.session.add(user_score)
-            db.session.commit()
+
+        db.session.commit()
         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
-        return redirect(url_for("users.quiz_results", 
-                                quiz_id=quiz_id, 
-                                scored=score, 
-                                total=len(full_questions)))
-    
+        return redirect(url_for("users.quiz_results", quiz_id=quiz_id, scored=score, total=len(full_questions)))
+
     test = request.args.get("test")
     return render_template("user/attempt_quiz.html", quiz=quiz, questions=full_questions, test=test)
+
+# @users_bp.route('/attempt_quiz/<int:quiz_id>', methods=['GET', 'POST'])
+# @login_required
+# def attempt_quiz(quiz_id):
+#     quiz = Quiz.query.get_or_404(quiz_id)
+#     questions = quiz.questions.copy()
+
+#     full_questions = []
+#     for q in questions:
+#         full_questions.append(q)
+#         full_questions.extend(q.sub_questions)
+
+#     if request.method == 'POST':
+#         score = 0
+#         for question in full_questions:
+#             selected_answers = request.form.getlist(f'question_{question.id}')
+#             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
+            
+#             if set(selected_answers) == correct_answers:
+#                 score+= 1
+
+#         existing_score = Score.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
+            
+#         # Mise à jour du score existant
+#         if existing_score:
+#             existing_score.total_scored = score
+#             db.session.commit()
+#         else:
+#             user_score = Score(
+#                 total_scored = score,
+#                 quiz_id = quiz_id,
+#                 user_id = current_user.id,  
+#             )
+#             db.session.add(user_score)
+#             db.session.commit()
+#         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
+#         return redirect(url_for("users.quiz_results", 
+#                                 quiz_id=quiz_id, 
+#                                 scored=score, 
+#                                 total=len(full_questions)))
+    
+#     test = request.args.get("test")
+#     return render_template("user/attempt_quiz.html", quiz=quiz, questions=full_questions, test=test)
 
 @users_bp.route('/quiz_results/<int:quiz_id>', )
 @login_required
@@ -122,6 +171,8 @@ def select_quiz():
                            quizzes=quizzes)
 
 
+
+
 @users_bp.route("/test_me", methods=["GET", "POST"])
 @login_required
 def test_me():
@@ -129,6 +180,7 @@ def test_me():
     selected_subject_id = request.form.get("subject_id", type=int)
     selected_chapter_ids = request.form.getlist("chapter_ids", type=int)
     number = request.form.get("number_of_questions", type=int)
+    only_unanswered_or_wrong = bool(request.form.get("only_unanswered_or_wrong"))
 
     chapters = []
     selected_questions = []
@@ -140,6 +192,16 @@ def test_me():
         quizzes = Quiz.query.filter(Quiz.chapter_id.in_(selected_chapter_ids)).all()
         quiz_ids = [quiz.id for quiz in quizzes]
         all_questions = Question.query.filter(Question.quiz_id.in_(quiz_ids)).all()
+
+        if only_unanswered_or_wrong:
+            attempted_question_ids = db.session.query(QuestionAttempt.question_id)\
+                .filter(QuestionAttempt.user_id == current_user.id,
+                        QuestionAttempt.is_correct == True).all()
+            attempted_ids_set = set(qid for (qid,) in attempted_question_ids)
+
+            # Filtrer les questions jamais réussies
+            all_questions = [q for q in all_questions if q.id not in attempted_ids_set]
+
         selected_questions = random.sample(all_questions, min(len(all_questions), number))
 
         # Stocker les IDs des questions dans la session
@@ -151,7 +213,8 @@ def test_me():
                            chapters=chapters,
                            selected_subject_id=selected_subject_id,
                            selected_chapter_ids=selected_chapter_ids,
-                           number=number)
+                           number=number,
+                           only_unanswered_or_wrong=only_unanswered_or_wrong)
 
 @users_bp.route('/attempt_test', methods=['GET', 'POST'])
 @login_required
@@ -163,7 +226,6 @@ def attempt_test():
 
     questions = Question.query.filter(Question.id.in_(question_ids)).all()
 
-    # Ajouter les sous-questions
     full_questions = []
     for q in questions:
         full_questions.append(q)
@@ -175,14 +237,55 @@ def attempt_test():
             selected_answers = request.form.getlist(f'question_{question.id}')
             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
 
-            if set(selected_answers) == correct_answers:
+            is_correct = set(selected_answers) == correct_answers
+            if is_correct:
                 score += 1
 
+            attempt = QuestionAttempt.query.filter_by(user_id=current_user.id, question_id=question.id).first()
+            if attempt:
+                attempt.is_correct = is_correct
+            else:
+                attempt = QuestionAttempt(user_id=current_user.id, question_id=question.id, is_correct=is_correct)
+                db.session.add(attempt)
+
+        db.session.commit()
         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
-        session.pop("test_question_ids", None)  # Nettoyage session
+        session.pop("test_question_ids", None)
         return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
 
     return render_template("user/attempt_test.html", questions=full_questions)
+
+
+# @users_bp.route('/attempt_test', methods=['GET', 'POST'])
+# @login_required
+# def attempt_test():
+#     question_ids = session.get("test_question_ids", [])
+#     if not question_ids:
+#         flash("Aucune question sélectionnée pour ce test.", "warning")
+#         return redirect(url_for("users.test_me"))
+
+#     questions = Question.query.filter(Question.id.in_(question_ids)).all()
+
+#     # Ajouter les sous-questions
+#     full_questions = []
+#     for q in questions:
+#         full_questions.append(q)
+#         full_questions.extend(q.sub_questions)
+
+#     if request.method == 'POST':
+#         score = 0
+#         for question in full_questions:
+#             selected_answers = request.form.getlist(f'question_{question.id}')
+#             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
+
+#             if set(selected_answers) == correct_answers:
+#                 score += 1
+
+#         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
+#         session.pop("test_question_ids", None)  # Nettoyage session
+#         return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
+
+#     return render_template("user/attempt_test.html", questions=full_questions)
 
 @users_bp.route('/test_results')
 @login_required

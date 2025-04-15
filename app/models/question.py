@@ -17,7 +17,8 @@ class Question(db.Model):
         'SubQuestion', 
         back_populates="parent", 
         cascade = "all, delete-orphan")
-
+    question_attempts = db.relationship('QuestionAttempt', back_populates='question', cascade="all, delete-orphan")
+    
     def get_options(self):
         options = [
             (1, self.option1),

@@ -16,6 +16,7 @@ _______________SUCCESS PODIUM_______________
 - synthaxe Latex pour les question statement (dans add question)
 - REGISTER : message d'erreur lorsque même user id 
 - pouvoir décoréller les questions des quiz
+- pouvoir choisir "questions auxquelles je n'ai pas répondu" 
 
 
 _______________Questions REFACTORING_______________
@@ -34,9 +35,6 @@ _______________Questions REFACTORING_______________
 
 - pouvoir choisir le nombre de questions auxquelles répondre 
 
-- pouvoir choisir "questions auxquelles j'ai déjà répondu" 
-- questions auxquelles je n'ai pas répondu 
-- questions auxquelles j'ai eu faux ou j'ai eu bon 
 
 - importer une correction
 

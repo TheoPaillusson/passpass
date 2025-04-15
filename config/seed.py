@@ -6,6 +6,7 @@ from app.models.quiz import Quiz
 from app.models.score import Score
 from app.models.subject import Subject
 from app.models.user import User
+from app.models.questionattempt import QuestionAttempt
 # Sample data
 users_data = [
     {
