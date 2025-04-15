@@ -1,15 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}Test personnalisé{% endblock %}
-
 {% block content %}
-<style>
-    .subquestion {
-        margin-left: 2rem;
-        border-left: 2px solid #ccc;
-        padding-left: 1rem;
-        background-color: #f9f9f9;
-    }
-</style>
 
 <h2>Test personnalisé</h2>
 
@@ -27,12 +18,7 @@
 
         {% if question.image_filename %}
             <div class="mb-3">
-                <img src="{{ url_for('static', filename='uploads/questions/' + question.image_filename|replace('\\', '/') ) }}"
-                     alt="Question Image" style="max-width: 100%; max-height: 300px;">
-            </div>
-        {% elif question.question_image %}
-            <div class="mb-3">
-                <img src="{{ url_for('static', filename='uploads/questions/' + question.question_image|replace('\\', '/') ) }}"
+                <img src="{{ url_for('static', filename='uploads/questions/' + question.image_filename)}}"
                      alt="Question Image" style="max-width: 100%; max-height: 300px;">
             </div>
         {% endif %}
