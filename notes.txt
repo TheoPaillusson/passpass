@@ -17,17 +17,16 @@ _______________SUCCESS PODIUM_______________
 - REGISTER : message d'erreur lorsque même user id 
 - pouvoir décoréller les questions des quiz
 - pouvoir choisir "questions auxquelles je n'ai pas répondu" 
-
+- synthaxe Latex pour les question statement (dans edit question)
+- PAGE : TESTEZ MOI 
 
 _______________Questions REFACTORING_______________
 
 - petite image dégueu dans le user attempt quiz pour les questions 
-- synthaxe Latex pour les question statement (dans edit question)
 
 [UNIQUEMENT APRES PAGE CORRECTION]
 - report issue pour l'utilisateur qui rencontre un probleme avec sa question 
     - possibilité d'écrire un message 
-
 
 - ux login champs pas de la même taille
 
@@ -35,10 +34,7 @@ _______________Questions REFACTORING_______________
 
 - pouvoir choisir le nombre de questions auxquelles répondre 
 
-
 - importer une correction
-
-
 
 _______________Quiz REFACTORING_______________
 
@@ -48,11 +44,6 @@ _______________Base de données_______________
 
 - migration possible de la base de données sans avoir à la détruire
 
-
-- PAGE : TESTEZ MOI 
-    - permet au user de 
-
 _______________vie du site_______________
-
 
 - Problème du jour 

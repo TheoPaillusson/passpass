@@ -10,6 +10,7 @@ class SubQuestion(db.Model):
     option4 = db.Column(db.String, nullable=True)
     option5 = db.Column(db.String, nullable=True)
     correct_options = db.Column(db.String, nullable=False)
+    correction = db.Column(db.Text, nullable=True)
 
     main_question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
     parent = db.relationship('Question', back_populates="sub_questions")  # No backref

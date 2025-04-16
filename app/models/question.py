@@ -10,6 +10,7 @@ class Question(db.Model):
     option4 = db.Column(db.String, nullable=True)
     option5 = db.Column(db.String, nullable=True)
     correct_options = db.Column(db.String, nullable=False)
+    correction = db.Column(db.Text, nullable=True)
    
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=True)

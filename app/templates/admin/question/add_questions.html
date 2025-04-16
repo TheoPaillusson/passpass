@@ -37,6 +37,9 @@
     <div>
         {{ form.correct_options.label }} {{ form.correct_options }}
     </div>
+    <div>
+        {{ form.correction.label }} {{ form.correction(class="form-control") }}
+    </div>
 
     <hr>
     <h3>Sous-questions</h3>
@@ -84,6 +87,10 @@
             <div>
                 <label>Bonne(s) réponse(s)</label>
                 <input type="text" name="form-sub_questions-__prefix__-correct_options" class="form-control" />
+            </div>
+            <div>
+                <label>Correction (facultatif)</label>
+                <textarea name="form-sub_questions-__prefix__-correction" class="form-control"></textarea>
             </div>
     
             <button type="button" class="btn btn-danger btn-sm remove-sub-question mt-2">Supprimer cette sous-question</button>

@@ -46,6 +46,7 @@ class SubQuestionForm(FlaskForm):
     option4 = StringField('Option 4')
     option5 = StringField('Option 5')
     correct_options = TextAreaField('Bonne(s) réponse(s)', validators=[DataRequired()])
+    correction = TextAreaField('Correction')
 
     class Meta:
         csrf = False #DÉSACTIVATION du CSRF pour les sous-formulaires
@@ -59,6 +60,7 @@ class QuestionForm(FlaskForm):
     option4 = StringField('Option 4')
     option5 = StringField('Option 5')
     correct_options = TextAreaField('Correct Option (1-5)', validators=[DataRequired()])
+    correction = TextAreaField('Correction')
     sub_questions = FieldList(FormField(SubQuestionForm), min_entries=0, label="Sous-Questions")
     submit = SubmitField('Valider')
     total_sub_questions = HiddenField()
