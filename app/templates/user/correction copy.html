@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Correction</h2>
+
+<style>
+    .subquestion {
+        margin-left: 2rem;
+        border-left: 2px solid #ccc;
+        padding-left: 1rem;
+        background-color: #f9f9f9;
+    }
+</style>
+
+{% for q in questions %}
+  <div class="question-block {% if q.question.parent_id %}subquestion{% endif %}">
+    <p><strong>{% if q.question.parent_id %}Sous-question{% else %}Question{% endif %} :</strong> 
+        {{ q.question.statement or q.question.question_statement }}</p>
+
+    {% if q.question.image %}
+      <img src="{{ url_for('static', filename='uploads/' + q.question.image) }}" 
+           alt="image question" style="max-width:300px;">
+    {% endif %}
+
+    {% if q.is_correct %}
+      <p class="text-success">✅ Bonne réponse !</p>
+    {% else %}
+      <p class="text-danger">❌ Mauvaise réponse !</p>
+      <p><strong>Votre réponse :</strong> {{ q.selected|join(', ') }}</p>
+    {% endif %}
+
+    {% if q.correction %}
+      <p><strong>Correction :</strong> {{ q.correction }}</p>
+    {% endif %}
+    <hr>
+  </div>
+{% endfor %}
+{% endblock %}

@@ -6,6 +6,9 @@
 <div>
     <h5>Quiz Name : {{ quiz.name }}</h5>
     <div>Your Score : {{ score.total_scored }} / {{ len_quiz }}</div>
+    {% if session.get('last_batch_id') %}
+    <a class="btn btn-success mt-3" href="{{ url_for('users.correction') }}">Voir la correction</a>
+    {% endif %} 
 
 </div>
 

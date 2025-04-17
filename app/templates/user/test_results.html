@@ -7,6 +7,9 @@
 <div class="alert alert-info">
     <strong>Score :</strong> {{ scored }} / {{ total }}
 </div>
+{% if session.get('last_batch_id') %}
+    <a class="btn btn-success mt-3" href="{{ url_for('users.correction') }}">Voir la correction</a>
+{% endif %}
 
 <a class="btn btn-primary" href="{{ url_for('users.test_me') }}">Se tester à nouveau</a>
 {% endblock %}
