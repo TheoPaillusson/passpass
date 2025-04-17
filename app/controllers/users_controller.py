@@ -9,6 +9,7 @@ from app.models.subject import Subject
 from app.models.user import User
 from app.models.questionattempt import QuestionAttempt
 from app.models.useranswer import UserAnswer
+from app.models.subquestion import SubQuestion
 from flask_login import  login_required, current_user
 import random
 from app.forms import TestMeForm
@@ -190,57 +191,6 @@ def test_me():
                            number=number,
                            only_unanswered_or_wrong=only_unanswered_or_wrong)
 
-@users_bp.route('/attempt_test', methods=['GET', 'POST'])
-@login_required
-def attempt_test():
-    question_ids = session.get("test_question_ids", [])
-    if not question_ids:
-        flash("Aucune question sélectionnée pour ce test.", "warning")
-        return redirect(url_for("users.test_me"))
-
-    questions = Question.query.filter(Question.id.in_(question_ids)).all()
-
-    full_questions = []
-    for q in questions:
-        if q:
-            full_questions.append(q)
-            full_questions.extend(q.sub_questions)
-
-    if request.method == 'POST':
-        score = 0
-        batch_id=str(uuid.uuid4())
-        session["last_batch_id"]=batch_id
-
-        for question in full_questions:
-            selected_answers = request.form.getlist(f'question_{question.id}')
-            correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
-
-            is_correct = set(selected_answers) == correct_answers
-            if is_correct:
-                score += 1
-            
-            user_answer=UserAnswer(
-                user_id=current_user.id,
-                question_id=question.id,
-                selected_options=",".join(selected_answers),
-                is_correct=is_correct,
-                batch_id=batch_id,
-            )
-            db.session.add(user_answer)
-
-            attempt = QuestionAttempt.query.filter_by(user_id=current_user.id, question_id=question.id).first()
-            if attempt:
-                attempt.is_correct = is_correct
-            else:
-                attempt = QuestionAttempt(user_id=current_user.id, question_id=question.id, is_correct=is_correct)
-                db.session.add(attempt)
-
-        db.session.commit()
-        flash(f'Votre score : {score}/{len(full_questions)}', category="success")
-        session.pop("test_question_ids", None)
-        return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
-
-    return render_template("user/attempt_test.html", questions=full_questions)
 
 @users_bp.route('/test_results')
 @login_required
@@ -255,6 +205,156 @@ def test_results():
     return render_template("user/test_results.html", scored=scored, total=total)
 
 
+
+
+# @users_bp.route('/attempt_test', methods=['GET', 'POST'])
+# @login_required
+# def attempt_test():
+#     question_ids = session.get("test_question_ids", [])
+#     if not question_ids:
+#         flash("Aucune question sélectionnée pour ce test.", "warning")
+#         return redirect(url_for("users.test_me"))
+
+#     questions = Question.query.filter(Question.id.in_(question_ids)).all()
+
+#     full_questions = []
+#     for q in questions:
+#         full_questions.append(q)
+#         full_questions.extend(q.sub_questions)
+
+#     if request.method == 'POST':
+#         score = 0
+#         batch_id = str(uuid.uuid4())
+#         session["last_batch_id"] = batch_id
+
+#         for question in full_questions:
+#             prefix = "subquestion" if isinstance(question, SubQuestion) else "question"
+#             selected_answers = request.form.getlist(f'{prefix}_{question.id}')
+#             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
+
+#             is_correct = set(selected_answers) == correct_answers
+#             if is_correct:
+#                 score += 1
+
+#             # Add UserAnswer for both question and subquestion
+#             user_answer = UserAnswer(
+#                 user_id=current_user.id,
+#                 question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
+#                 subquestion_id=question.id if isinstance(question, SubQuestion) else None,
+#                 selected_options=",".join(selected_answers),
+#                 is_correct=is_correct,
+#                 batch_id=batch_id,
+#             )
+#             db.session.add(user_answer)
+
+#             # Use just question_id for attempts, as subquestion attempts are tracked at main question level
+#             attempt = QuestionAttempt.query.filter_by(
+#                 user_id=current_user.id,
+#                 question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id
+#             ).first()
+
+#             if attempt:
+#                 attempt.is_correct = is_correct
+#             else:
+#                 attempt = QuestionAttempt(
+#                     user_id=current_user.id,
+#                     question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
+#                     is_correct=is_correct
+#                 )
+#                 db.session.add(attempt)
+
+#         db.session.commit()
+#         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
+#         session.pop("test_question_ids", None)
+#         return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
+
+#     return render_template("user/attempt_test.html", questions=full_questions)
+@users_bp.route('/attempt_test', methods=['GET', 'POST'])
+@login_required
+def attempt_test():
+    question_ids = session.get("test_question_ids", [])
+    if not question_ids:
+        flash("Aucune question sélectionnée pour ce test.", "warning")
+        return redirect(url_for("users.test_me"))
+
+    questions = Question.query.filter(Question.id.in_(question_ids)).all()
+
+    full_questions = []
+    for q in questions:
+        full_questions.append(q)
+        full_questions.extend(q.sub_questions)
+
+    if request.method == 'POST':
+        score = 0
+        batch_id = str(uuid.uuid4())
+        session["last_batch_id"] = batch_id
+
+        print("Form Data:", request.form)  # Debug print
+
+        for question in full_questions:
+            if isinstance(question, SubQuestion):
+                form_field_name = f"subquestion_{question.id}"
+            else:
+                form_field_name = f"question_{question.id}"
+
+            selected_answers = request.form.getlist(form_field_name)
+
+            # Debug: Print retrieved answers
+            print(f"{form_field_name} selected:", selected_answers)
+
+            correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
+            is_correct = set(selected_answers) == correct_answers
+            if is_correct:
+                score += 1
+
+            # Check if an existing UserAnswer record exists
+            user_answer = UserAnswer.query.filter_by(
+                user_id=current_user.id,
+                question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
+                subquestion_id=question.id if isinstance(question, SubQuestion) else None,
+                batch_id=batch_id
+            ).first()
+
+            if user_answer:
+                user_answer.selected_options = ",".join(selected_answers)
+                user_answer.is_correct = is_correct
+            else:
+                user_answer = UserAnswer(
+                    user_id=current_user.id,
+                    question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
+                    subquestion_id=question.id if isinstance(question, SubQuestion) else None,
+                    selected_options=",".join(selected_answers),
+                    is_correct=is_correct,
+                    batch_id=batch_id,
+                )
+                db.session.add(user_answer)
+
+            # Check if an existing QuestionAttempt record exists
+            existing_attempt = QuestionAttempt.query.filter_by(
+                user_id=current_user.id,
+                question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id
+            ).first()
+
+            if existing_attempt:
+                existing_attempt.is_correct = is_correct
+            else:
+                attempt = QuestionAttempt(
+                    user_id=current_user.id,
+                    question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
+                    is_correct=is_correct
+                )
+                db.session.add(attempt)
+
+        db.session.commit()
+        flash(f'Votre score : {score}/{len(full_questions)}', category="success")
+        session.pop("test_question_ids", None)
+        return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
+
+    return render_template("user/attempt_test.html", questions=full_questions)
+
+
+
+
 @users_bp.route('/correction')
 @login_required
 def correction():
@@ -263,89 +363,46 @@ def correction():
         flash("Aucune correction disponible.", "warning")
         return redirect(url_for("users.test_me"))
 
-    # Récupère toutes les UserAnswer du batch
+    # Retrieve all answers for the given batch with eager loading
     answers = UserAnswer.query.options(
-        joinedload(UserAnswer.question).joinedload(Question.sub_questions)
+        db.joinedload(UserAnswer.question),
+        db.joinedload(UserAnswer.subquestion)
     ).filter_by(
         user_id=current_user.id,
         batch_id=batch_id
-    ).join(UserAnswer.question).order_by(
-        Question.parent_id.asc().nullsfirst(), Question.id
     ).all()
-
-    # Map Question.id -> UserAnswer
-    answers_by_question_id = {a.question.id: a for a in answers if a.question}
 
     questions_with_answers = []
 
     for answer in answers:
-        question = answer.question
-        if not question:
-            continue
+        print("⤵ ID:", answer.id)
+        print("→ subquestion_id:", answer.subquestion_id)
+        print("→ subquestion object:", answer.subquestion)
+        print("→ question_id:", answer.question_id)
+        print("→ question object:", answer.question)
 
-        # Question principale ou sous-question déjà dans UserAnswer
-        questions_with_answers.append({
-            "question": question,
-            "selected": answer.selected_options.split(","),
-            "correct": set(question.correct_options.split(",")) if question.correct_options else set(),
-            "is_correct": answer.is_correct,
-            "correction": question.correction
-        })
+        if answer.subquestion_id is not None and answer.subquestion is not None:
+            sub = answer.subquestion
+            questions_with_answers.append({
+                "question": sub,
+                "selected": answer.selected_options.split(","),
+                "correct": set(sub.correct_options.split(",")) if sub.correct_options else set(),
+                "is_correct": answer.is_correct,
+                "correction": sub.correction,
+                "is_subquestion": True
+            })
+        elif answer.question is not None:
+            question = answer.question
+            questions_with_answers.append({
+                "question": question,
+                "selected": answer.selected_options.split(","),
+                "correct": set(question.correct_options.split(",")) if question.correct_options else set(),
+                "is_correct": answer.is_correct,
+                "correction": question.correction,
+                "is_subquestion": False
+            })
 
-        # ➕ Ajouter les sous-questions si présentes et répondues
-        for sub in question.sub_questions:
-            sub_answer = answers_by_question_id.get(sub.id)
-            if sub_answer:
-                questions_with_answers.append({
-                    "question": sub,
-                    "selected": sub_answer.selected_options.split(","),
-                    "correct": set(sub.correct_options.split(",")) if sub.correct_options else set(),
-                    "is_correct": sub_answer.is_correct,
-                    "correction": sub.correction
-                })
+    for q in questions_with_answers:
+        print("→", "SUB" if q["is_subquestion"] else "MAIN", q["question"].question_statement)
 
-    print("Questions récupérées pour correction :", [q["question"].id for q in questions_with_answers])
-    
     return render_template("user/correction.html", questions=questions_with_answers)
-
-
-# @users_bp.route('/correction')
-# @login_required
-# def correction():
-#     batch_id = session.get("last_batch_id")
-#     if not batch_id:
-#         flash("Aucune correction disponible.", "warning")
-#         return redirect(url_for("users.test_me"))
-
-#     # Charge les questions et leurs parents
-#     answers = UserAnswer.query.options(
-#         joinedload(UserAnswer.question).joinedload(Question.sub_questions)
-#     ).filter_by(
-#         user_id=current_user.id,
-#         batch_id=batch_id
-#     ).join(UserAnswer.question).order_by(
-#         Question.parent_id.asc().nullsfirst(), Question.id
-#     ).all()
-
-#     questions_with_answers = []
-#     for answer in answers:
-#         question = answer.question
-#         if not question:
-#             continue
-
-#         questions_with_answers.append({
-#             "question": question,
-#             "selected": answer.selected_options.split(","),
-#             "correct": set(question.correct_options.split(",")) if question.correct_options else set(),
-#             "is_correct": answer.is_correct,
-#             "correction": question.correction
-#         })
-
-#     for q in questions_with_answers:
-#         print(f"Q{q['question'].id} | Parent: {q['question'].parent_id} | Statement: {q['question'].question_statement}")
-
-#     print("Réponses chargées pour la correction :")
-
-#     print("Questions récupérées pour correction :", [q["question"].id for q in questions_with_answers])
-    
-#     return render_template("user/correction.html", questions=questions_with_answers)

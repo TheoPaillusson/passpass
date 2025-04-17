@@ -12,7 +12,6 @@
 </style>
 
 <h2>Test personnalisé</h2>
-
 <form id="quizForm" method="post">
     {% for question in questions %}
     <div class="{% if question.parent %}subquestion{% else %}mainquestion{% endif %}">
@@ -40,14 +39,25 @@
         <h6>Choisis tes réponses :</h6>
 
         {% for index, option in question.get_options() %}
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox"
-                   name="question_{{ question.id }}" value="{{ index }}"
-                   id="option{{ index }}_{{ question.id }}">
-            <label class="form-check-label" for="option{{ index }}_{{ question.id }}">
-                {{ option }}
-            </label>
-        </div>
+        {% if question.parent %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       name="subquestion_{{ question.id }}" value="{{ index }}"
+                       id="suboption{{ index }}_{{ question.id }}">
+                <label class="form-check-label" for="suboption{{ index }}_{{ question.id }}">
+                    {{ option }}
+                </label>
+            </div>
+        {% else %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       name="question_{{ question.id }}" value="{{ index }}"
+                       id="option{{ index }}_{{ question.id }}">
+                <label class="form-check-label" for="option{{ index }}_{{ question.id }}">
+                    {{ option }}
+                </label>
+            </div>
+        {% endif %}
         {% endfor %}
     </div>
     {% endfor %}
