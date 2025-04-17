@@ -61,6 +61,7 @@
             <div class ="form-group">
                 <input type="hidden" name="sub_questions-__prefix__-id" value="">
                 <input type="hidden" name="sub_questions-__prefix__-existing_image" value="">
+                
                 <label for="sub-questions-__prefix__-question_image">Image de la sous-question :</label>
                 <input type="file" id="sub_questions-__prefix__-question_image" name="sub_questions-__prefix__-question_image">
             </div>
@@ -90,8 +91,7 @@
             </div>
             <div class="form-group">
                 <label for="sub_questions-__prefix__-correction">Correction</label>
-                <textarea id="sub_questions-__prefix__-correction" name="sub_questions-__prefix__-correction">
-                </textarea>
+                <textarea id="sub_questions-__prefix__-correction" name="sub_questions-__prefix__-correction"></textarea>
             </div>
             <button type="button" class="btn btn-danger remove-sub-question">Supprimer</button>
         </div>
@@ -104,51 +104,58 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    const addSubQuestionButton = document.getElementById("add-sub-question");
-
-    addSubQuestionButton.addEventListener("click", function () {
-        const container = document.getElementById("sub-questions");
-
-        let validToAdd = true;
-        document.querySelectorAll("#sub-questions .sub-question-block").forEach(block => {
-            const questionStatement = block.querySelector('[name*=question_statement]').value.trim();
-            const correctOption = block.querySelector('[name*=correct_options]').value.trim();
-
-            if (!questionStatement || !correctOption) {
-                validToAdd = false;
-            }
-        });
-
-        if (!validToAdd) {
-            alert("Veuillez remplir toutes les sous-questions existantes avant d'en ajouter de nouvelles.");
+        const addSubQuestionButton = document.getElementById("add-sub-question");
+    
+        if (!addSubQuestionButton) {
+            console.error("Le bouton 'Ajouter une sous-question' n'a pas été trouvé.");
             return;
         }
-
-        const totalInput = document.getElementById("total_sub_questions");
-        let index = parseInt(totalInput.value);
-        totalInput.value = index + 1;
-
-        const templateString = document.getElementById("empty-sub-question-template").innerHTML;
-
-        const uniqueTemplate = templateString.replace(/__prefix__/g, index);
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = uniqueTemplate;
-
-        const newSubQuestionForm = tempDiv.firstElementChild;
-
-        container.appendChild(newSubQuestionForm);
+    
+        addSubQuestionButton.addEventListener("click", function () {
+            const container = document.getElementById("sub-questions");
+    
+            let validToAdd = true;
+            document.querySelectorAll("#sub-questions .sub-question-block").forEach(block => {
+                const questionStatement = block.querySelector('[name*=question_statement]').value.trim();
+                const correctOption = block.querySelector('[name*=correct_options]').value.trim();
+    
+                if (!questionStatement || !correctOption) {
+                    validToAdd = false;
+                }
+            });
+    
+            if (!validToAdd) {
+                alert("Veuillez remplir toutes les sous-questions existantes avant d'en ajouter de nouvelles.");
+                return;
+            }
+            
+            const totalInput = document.getElementById("total_sub_questions");
+            let index = parseInt(totalInput.value);
+            totalInput.value = index + 1;
+            const templateString = document.getElementById("empty-sub-question-template").innerHTML;
+    
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = templateString.replace(/sub_questions-__prefix__/g, `sub_questions-${index}`);
+    
+            const newSubQuestionForm = tempDiv.firstElementChild;
+    
+            container.appendChild(newSubQuestionForm);
+            updateSubQuestionCount();
+        });
+    
+        document.addEventListener("click", function (e) {
+            if (e.target && e.target.classList.contains("remove-sub-question")) {
+                e.target.closest(".sub-question-block").remove();
+                updateSubQuestionCount();
+            }
+        });
+    
         updateSubQuestionCount();
     });
-
+    
     function updateSubQuestionCount() {
-        const totalInput = document.getElementById("total_sub_questions");
-        const count = document.querySelectorAll("#sub-questions .sub-question-block").length;
-        totalInput.value = count;
-        console.log(`Total subquestions: ${count}`);  // Debug output
+        document.getElementById("total_sub_questions").value = document.querySelectorAll("#sub-questions .sub-question-block").length;
     }
-});
-
-
     </script>
 
 {% endblock %}

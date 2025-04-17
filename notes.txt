@@ -19,23 +19,23 @@ _______________SUCCESS PODIUM_______________
 - pouvoir choisir "questions auxquelles je n'ai pas répondu" 
 - synthaxe Latex pour les question statement (dans edit question)
 - PAGE : TESTEZ MOI 
+- pouvoir choisir le nombre de questions auxquelles répondre 
 
 _______________Questions REFACTORING_______________
 
 - petite image dégueu dans le user attempt quiz pour les questions 
 
-[UNIQUEMENT APRES PAGE CORRECTION]
-- report issue pour l'utilisateur qui rencontre un probleme avec sa question 
-    - possibilité d'écrire un message 
+
 
 - ux login champs pas de la même taille
 
-- voir le recap du quiz : les questions auxquelles j'ai eu bon et celles ou j'ai eu faux 
 
-- pouvoir choisir le nombre de questions auxquelles répondre 
-
+- 
 - importer une correction
-
+-> la réponse rendue à l'utilisateur est uniquement le numéro de la réponse et non le contenu
+[UNIQUEMENT APRES PAGE CORRECTION]
+- report issue pour l'utilisateur qui rencontre un probleme avec sa question 
+    - possibilité d'écrire un message 
 _______________Quiz REFACTORING_______________
 
 - probleme obligé de renseigner l'heure dans l'ajout de quiz > ne sert à rien 

@@ -16,9 +16,6 @@ from app.forms import TestMeForm
 import uuid
 from sqlalchemy.orm import joinedload
 
-
-
-
 users_bp = Blueprint('users', __name__)
 
 @users_bp.route("/dashboard")
@@ -36,6 +33,45 @@ def dashboard():
                            total_attempted_quizzes=total_attempted_quizzes, 
                            average_score=average_score)
 
+@users_bp.route('/leaderboard')
+@login_required
+def leaderboard():
+    users = User.get_all_users()
+    leaderboard_data = []
+    for user in users:
+        scores = Score.query.filter_by(user_id=user.id).all()
+        total_score = sum([s.total_scored for s in scores])
+        leaderboard_data.append({
+            "user_fullname": user.fullname,
+            "total_score": total_score
+        })
+        leaderboard_data.sort(key=lambda x:x['total_score'], reverse=True)
+        user_fullnames = [x['user_fullname'] for x in leaderboard_data]
+        user_total_scores = [x["total_score"] for x in leaderboard_data]
+    return render_template('user/leaderboard.html',
+                           leaderboard_data=leaderboard_data,
+                           user_fullnames=user_fullnames,
+                           user_total_scores=user_total_scores)
+
+@users_bp.route('/select-quiz', methods=['GET', 'POST'])
+@login_required
+def select_quiz():
+    subjects = Subject.query.all()
+    chapters = Chapter.query.all()
+    quizzes = Quiz.query.all()
+
+    if request.method =='POST':
+        subject_id = request.form.get('subject_id')
+        chapter_id = request.form.get('chapter_id')
+        if subject_id:
+            quizzes = Quiz.query.join(Chapter).filter(Chapter.subject_id == subject_id).all()
+        if chapter_id:
+            quizzes = Quiz.query.filter_by(chapter_id=chapter_id).all()
+
+    return render_template("user/select-quiz.html", 
+                           subjects=subjects,
+                           chapters=chapters,
+                           quizzes=quizzes)
 
 @users_bp.route('/attempt_quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
@@ -105,49 +141,6 @@ def quiz_results(quiz_id):
      
     return render_template("user/quiz_results.html", quiz=quiz, score=score, len_quiz=len_quiz)
 
-@users_bp.route('/leaderboard')
-@login_required
-def leaderboard():
-    users = User.get_all_users()
-    leaderboard_data = []
-    for user in users:
-        scores = Score.query.filter_by(user_id=user.id).all()
-        total_score = sum([s.total_scored for s in scores])
-        leaderboard_data.append({
-            "user_fullname": user.fullname,
-            "total_score": total_score
-        })
-        leaderboard_data.sort(key=lambda x:x['total_score'], reverse=True)
-        user_fullnames = [x['user_fullname'] for x in leaderboard_data]
-        user_total_scores = [x["total_score"] for x in leaderboard_data]
-    return render_template('user/leaderboard.html',
-                           leaderboard_data=leaderboard_data,
-                           user_fullnames=user_fullnames,
-                           user_total_scores=user_total_scores)
-
-@users_bp.route('/select-quiz', methods=['GET', 'POST'])
-@login_required
-def select_quiz():
-    subjects = Subject.query.all()
-    chapters = Chapter.query.all()
-    quizzes = Quiz.query.all()
-
-    if request.method =='POST':
-        subject_id = request.form.get('subject_id')
-        chapter_id = request.form.get('chapter_id')
-        if subject_id:
-            quizzes = Quiz.query.join(Chapter).filter(Chapter.subject_id == subject_id).all()
-        if chapter_id:
-            quizzes = Quiz.query.filter_by(chapter_id=chapter_id).all()
-
-    return render_template("user/select-quiz.html", 
-                           subjects=subjects,
-                           chapters=chapters,
-                           quizzes=quizzes)
-
-
-
-
 @users_bp.route("/test_me", methods=["GET", "POST"])
 @login_required
 def test_me():
@@ -191,84 +184,6 @@ def test_me():
                            number=number,
                            only_unanswered_or_wrong=only_unanswered_or_wrong)
 
-
-@users_bp.route('/test_results')
-@login_required
-def test_results():
-    scored = request.args.get("scored", type=int)
-    total = request.args.get("total", type=int)
-
-    if scored is None or total is None:
-        flash("Résultat du test introuvable.", "warning")
-        return redirect(url_for("users.test_me"))
-
-    return render_template("user/test_results.html", scored=scored, total=total)
-
-
-
-
-# @users_bp.route('/attempt_test', methods=['GET', 'POST'])
-# @login_required
-# def attempt_test():
-#     question_ids = session.get("test_question_ids", [])
-#     if not question_ids:
-#         flash("Aucune question sélectionnée pour ce test.", "warning")
-#         return redirect(url_for("users.test_me"))
-
-#     questions = Question.query.filter(Question.id.in_(question_ids)).all()
-
-#     full_questions = []
-#     for q in questions:
-#         full_questions.append(q)
-#         full_questions.extend(q.sub_questions)
-
-#     if request.method == 'POST':
-#         score = 0
-#         batch_id = str(uuid.uuid4())
-#         session["last_batch_id"] = batch_id
-
-#         for question in full_questions:
-#             prefix = "subquestion" if isinstance(question, SubQuestion) else "question"
-#             selected_answers = request.form.getlist(f'{prefix}_{question.id}')
-#             correct_answers = set(question.correct_options.split(',')) if question.correct_options else set()
-
-#             is_correct = set(selected_answers) == correct_answers
-#             if is_correct:
-#                 score += 1
-
-#             # Add UserAnswer for both question and subquestion
-#             user_answer = UserAnswer(
-#                 user_id=current_user.id,
-#                 question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
-#                 subquestion_id=question.id if isinstance(question, SubQuestion) else None,
-#                 selected_options=",".join(selected_answers),
-#                 is_correct=is_correct,
-#                 batch_id=batch_id,
-#             )
-#             db.session.add(user_answer)
-
-#             # Use just question_id for attempts, as subquestion attempts are tracked at main question level
-#             attempt = QuestionAttempt.query.filter_by(
-#                 user_id=current_user.id,
-#                 question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id
-#             ).first()
-
-#             if attempt:
-#                 attempt.is_correct = is_correct
-#             else:
-#                 attempt = QuestionAttempt(
-#                     user_id=current_user.id,
-#                     question_id=question.main_question_id if isinstance(question, SubQuestion) else question.id,
-#                     is_correct=is_correct
-#                 )
-#                 db.session.add(attempt)
-
-#         db.session.commit()
-#         flash(f'Votre score : {score}/{len(full_questions)}', category="success")
-#         session.pop("test_question_ids", None)
-#         return redirect(url_for("users.test_results", scored=score, total=len(full_questions)))
-
-#     return render_template("user/attempt_test.html", questions=full_questions)
 @users_bp.route('/attempt_test', methods=['GET', 'POST'])
 @login_required
 def attempt_test():
@@ -352,8 +267,17 @@ def attempt_test():
 
     return render_template("user/attempt_test.html", questions=full_questions)
 
+@users_bp.route('/test_results')
+@login_required
+def test_results():
+    scored = request.args.get("scored", type=int)
+    total = request.args.get("total", type=int)
 
+    if scored is None or total is None:
+        flash("Résultat du test introuvable.", "warning")
+        return redirect(url_for("users.test_me"))
 
+    return render_template("user/test_results.html", scored=scored, total=total)
 
 @users_bp.route('/correction')
 @login_required
